@@ -24,6 +24,16 @@ from .contracts import GraphConstructionConfig, GraphConstructionReport, GraphNo
 
 @dataclass(frozen=True)
 class UseMakeGraphConfig(GraphConstructionConfig):
+    """Configuration for USE/MAKE graph construction.
+
+    The orientation settings are authoritative declarations supplied by the
+    caller. The builder canonicalizes tables according to those declarations,
+    then validates dimensions, labels, and cross-table alignment. It cannot
+    independently infer real-world sector-vs-commodity semantics from arbitrary
+    DataFrame labels, and it intentionally avoids dataset-specific label-prefix
+    heuristics.
+    """
+
     backend: str = "use_make"
     use_orientation: str = "commodity_by_sector"
     make_orientation: str = "sector_by_commodity"
@@ -34,6 +44,8 @@ class UseMakeGraphConfig(GraphConstructionConfig):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+        if self.backend != "use_make":
+            raise GraphInputError("UseMakeGraphConfig requires backend == 'use_make'")
         if self.use_orientation not in SUPPORTED_ORIENTATIONS:
             raise GraphInputError("unsupported USE orientation")
         if self.make_orientation not in SUPPORTED_ORIENTATIONS:
@@ -91,7 +103,10 @@ def compute_leontief_inverse(A: np.ndarray, fallback_policy: str = "error", regu
             inverse = np.linalg.pinv(system_matrix)
         else:
             method = "regularized"
-            inverse = np.linalg.inv(system_matrix + np.eye(system_matrix.shape[0]) * float(regularization))
+            try:
+                inverse = np.linalg.inv(system_matrix + np.eye(system_matrix.shape[0]) * float(regularization))
+            except np.linalg.LinAlgError as regularized_exc:
+                raise GraphInputError("regularized Leontief system remains singular") from regularized_exc
     report = LeontiefComputationReport(
         shape=coefficients.shape,
         condition_number=condition_number,
@@ -162,8 +177,13 @@ def build_use_make_graph(use_table: pd.DataFrame, make_table: pd.DataFrame, *, c
     weights = model_weights(flows, edge_index, len(common_sectors), cfg.weight_transform)
     diagnostics = {
         "alignment_coverage": float(coverage),
-        "removed_use_commodities": [label for label in ordered_labels(use_table.index) if label not in common_commodities],
-        "removed_sectors": [label for label in ordered_labels(use_table.columns) if label not in common_sectors],
+        "removed_use_commodities": [label for label in canonical_use.index if label not in common_commodities],
+        "removed_use_sectors": [label for label in canonical_use.columns if label not in common_sectors],
+        "removed_make_commodities": [label for label in canonical_make.columns if label not in common_commodities],
+        "removed_make_sectors": [label for label in canonical_make.index if label not in common_sectors],
+        "retained_commodities": list(common_commodities),
+        "retained_sectors": list(common_sectors),
+        "removed_sectors": [label for label in canonical_use.columns if label not in common_sectors],
         "use_requirements_shape": tuple(use_requirements_by_commodity_sector.shape),
         "market_shares_shape": tuple(market_shares_by_sector_commodity.shape),
         "technical_coefficients_shape": tuple(technical_coefficients.shape),

@@ -29,6 +29,8 @@ class ICIOGraphConfig(GraphConstructionConfig):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+        if self.backend != "icio":
+            raise GraphInputError("ICIOGraphConfig requires backend == 'icio'")
         if self.missing_cell_policy not in SUPPORTED_MISSING_POLICIES:
             raise GraphInputError("unsupported ICIO missing-cell policy")
 

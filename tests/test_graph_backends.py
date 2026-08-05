@@ -93,9 +93,38 @@ def test_use_make_transposed_orientation_equivalence_and_not_noop():
     np.testing.assert_allclose(transposed.source_metadata["unthresholded_A"], canonical.source_metadata["unthresholded_A"])
     np.testing.assert_array_equal(transposed.edge_index, canonical.edge_index)
     np.testing.assert_allclose(transposed.raw_flow, canonical.raw_flow)
-    wrong = build_use_make_graph(use.T, make.T, config=UseMakeGraphConfig(include_self_loops=True))
-    assert wrong.labels != canonical.labels
-    assert not np.allclose(wrong.source_metadata["unthresholded_A"], canonical.source_metadata["unthresholded_A"])
+    assert transposed.report.diagnostics["retained_commodities"] == canonical.report.diagnostics["retained_commodities"]
+    assert transposed.report.diagnostics["retained_sectors"] == canonical.report.diagnostics["retained_sectors"]
+
+
+def test_use_make_transposed_alignment_diagnostics_are_canonical():
+    use = pd.DataFrame([[10, 2], [1, 8], [5, 6]], index=["C1", "C2", "C_DROP"], columns=["S1", "S2"])
+    make = pd.DataFrame([[9, 1, 0], [2, 7, 0], [4, 4, 1]], index=["S1", "S2", "S_DROP"], columns=["C1", "C2", "C_MAKE_ONLY"])
+    cfg = UseMakeGraphConfig(min_alignment_coverage=0.5, include_self_loops=True)
+    canonical = build_use_make_graph(use, make, config=cfg)
+    transposed = build_use_make_graph(
+        use.T,
+        make.T,
+        config=UseMakeGraphConfig(
+            use_orientation="sector_by_commodity",
+            make_orientation="commodity_by_sector",
+            min_alignment_coverage=0.5,
+            include_self_loops=True,
+        ),
+    )
+    keys = [
+        "removed_use_commodities",
+        "removed_use_sectors",
+        "removed_make_commodities",
+        "removed_make_sectors",
+        "retained_commodities",
+        "retained_sectors",
+    ]
+    for key in keys:
+        assert transposed.report.diagnostics[key] == canonical.report.diagnostics[key]
+    assert canonical.report.diagnostics["removed_use_commodities"] == ["C_DROP"]
+    assert canonical.report.diagnostics["removed_make_commodities"] == ["C_MAKE_ONLY"]
+    assert canonical.report.diagnostics["removed_make_sectors"] == ["S_DROP"]
 
 
 def test_use_make_rejects_bad_orientation_labels_and_preserves_input():
@@ -107,6 +136,9 @@ def test_use_make_rejects_bad_orientation_labels_and_preserves_input():
     bad.index = ["C1", "  "]
     with pytest.raises(GraphInputError, match="empty"):
         build_use_make_graph(bad, make)
+    incompatible_make = make.rename(index={"S1": "X1", "S2": "X2"}, columns={"C1": "Y1", "C2": "Y2"})
+    with pytest.raises(GraphInputError, match="alignment coverage"):
+        build_use_make_graph(use, incompatible_make, config=UseMakeGraphConfig(min_alignment_coverage=1.0))
     pd.testing.assert_frame_equal(use, original)
 
 
@@ -155,6 +187,8 @@ def test_leontief_integration_and_fallback_reports():
     assert reg_report.used_fallback and reg_report.method == "regularized" and reg_report.regularization_value == 0.01
     with pytest.raises(GraphInputError):
         compute_leontief_inverse(np.eye(2), "regularized", regularization=0.0)
+    with pytest.raises(GraphInputError, match="regularized Leontief"):
+        compute_leontief_inverse(np.array([[2.0, 0.0], [0.0, 1.0]]), "regularized", regularization=1.0)
 
 
 def test_graph_snapshot_focused_failures():
@@ -197,3 +231,9 @@ def test_invalid_configuration_contracts_fail_early():
         UseMakeGraphConfig(min_alignment_coverage=2)
     with pytest.raises(GraphInputError):
         UseMakeGraphConfig(leontief_fallback="bad")
+    UseMakeGraphConfig()
+    ICIOGraphConfig()
+    with pytest.raises(GraphInputError, match="UseMakeGraphConfig requires"):
+        UseMakeGraphConfig(backend="icio")
+    with pytest.raises(GraphInputError, match="ICIOGraphConfig requires"):
+        ICIOGraphConfig(backend="use_make")
