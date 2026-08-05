@@ -82,6 +82,15 @@ def add_composite_scores(records: list[ESGRecord]) -> list[dict[str, float | str
     return [{**record.__dict__, "esg_score": record.esg_score} for record in records]
 
 
+def validate_square_matrix(matrix: pd.DataFrame | np.ndarray) -> None:
+    """Validate that an I/O matrix is non-empty and square."""
+    shape = np.asarray(matrix).shape
+    if len(shape) != 2 or shape[0] == 0 or shape[1] == 0:
+        raise ValueError("I/O matrix must be a non-empty two-dimensional matrix")
+    if shape[0] != shape[1]:
+        raise ValueError("I/O matrix must be square with the same number of rows and columns")
+
+
 def read_io_matrix(path: str | Path) -> pd.DataFrame:
     """Read an industry-by-industry I/O matrix from CSV or Excel."""
     path = Path(path)
@@ -89,11 +98,16 @@ def read_io_matrix(path: str | Path) -> pd.DataFrame:
         df = pd.read_excel(path, index_col=0)
     else:
         df = pd.read_csv(path, index_col=0)
-    return df.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    df = df.apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    validate_square_matrix(df)
+    return df
 
 
 def graph_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray, percentile: float = 50.0) -> tuple[np.ndarray, np.ndarray]:
     """Create weighted edges from positive I/O flows above a percentile threshold."""
+    if not 0 <= percentile <= 100:
+        raise ValueError("percentile must be between 0 and 100")
+    validate_square_matrix(io_matrix)
     matrix = np.asarray(io_matrix, dtype=float)
     positive = matrix[matrix > 0]
     if positive.size == 0:
@@ -107,6 +121,7 @@ def graph_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray, percentile: float
 
 def features_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray) -> np.ndarray:
     """Build notebook-inspired Leontief and network features for each industry."""
+    validate_square_matrix(io_matrix)
     matrix = np.asarray(io_matrix, dtype=float)
     row_sum = matrix.sum(axis=1)
     col_sum = matrix.sum(axis=0)
@@ -127,6 +142,9 @@ def features_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray) -> np.ndarray:
 def targets_from_esg_frame(esg_df: pd.DataFrame, node_labels: Iterable[str]) -> np.ndarray:
     """Align ESG targets to graph nodes using sector/industry labels when present."""
     df = esg_df.copy()
+    labels = list(node_labels)
+    if df.empty:
+        raise ValueError("ESG data must contain at least one row")
     score_cols = [c for c in df.columns if c.lower() in {"esg_score", "esg", "score"}]
     if not score_cols:
         pillars = [c for c in df.columns if c.lower() in {"environmental", "social", "governance"}]
@@ -139,21 +157,27 @@ def targets_from_esg_frame(esg_df: pd.DataFrame, node_labels: Iterable[str]) -> 
         score_col = score_cols[0]
     key_col = next((c for c in df.columns if c.lower() in {"sector", "industry", "node", "code"}), None)
     if key_col is None:
-        values = np.resize(df[score_col].to_numpy(dtype=float), len(list(node_labels)))
+        values = df[score_col].to_numpy(dtype=float)
+        if values.shape != (len(labels),):
+            raise ValueError("ESG target length must match the number of graph nodes when no alignment key is present")
     else:
         mapping = df.groupby(key_col)[score_col].mean().to_dict()
-        values = np.array([mapping.get(label, np.nan) for label in node_labels], dtype=float)
+        values = np.array([mapping.get(label, np.nan) for label in labels], dtype=float)
         values = np.where(np.isnan(values), np.nanmean(df[score_col].to_numpy(dtype=float)), values)
     return values.astype(np.float32)
 
 
 def build_graph_dataset(io_matrix: pd.DataFrame | np.ndarray, targets: np.ndarray | None = None, years_used: list[int] | None = None) -> GraphDataset:
+    validate_square_matrix(io_matrix)
     labels = list(io_matrix.index.astype(str)) if isinstance(io_matrix, pd.DataFrame) else [str(i) for i in range(np.asarray(io_matrix).shape[0])]
     features = features_from_io_matrix(io_matrix)
     edge_index, edge_weight = graph_from_io_matrix(io_matrix)
     if targets is None:
         targets = features[:, 0] * 10 + 70
-    return GraphDataset(features, edge_index, edge_weight, np.asarray(targets, dtype=np.float32), labels, years_used or [])
+    targets = np.asarray(targets, dtype=np.float32)
+    if targets.shape != (features.shape[0],):
+        raise ValueError("targets must be a one-dimensional array matching the number of graph nodes")
+    return GraphDataset(features, edge_index, edge_weight, targets, labels, years_used or [])
 
 
 def make_smoke_dataset() -> GraphDataset:

@@ -46,11 +46,11 @@ environments.
 Run the full extracted workflow on deterministic in-repository sample data:
 
 ```bash
-python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8
+python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8 --metrics-output pipeline_metrics.json
 ```
 
-This mode does not use external data, API credentials, raw datasets, databases,
-or generated output files.
+This mode does not use external data, API credentials, raw datasets, or databases,
+and writes metrics to `pipeline_metrics.json` unless `--metrics-output` is provided.
 
 ## Running with local research data
 
@@ -64,12 +64,11 @@ python scripts/run_pipeline.py \
   --hidden-dim 64
 ```
 
-The I/O matrix may be CSV, XLS, or XLSX with industries in both rows and columns.
+The I/O matrix may be CSV, XLS, or XLSX with industries in both rows and columns; XLS/XLSX reading uses `openpyxl`.
 The ESG CSV should include either an `esg_score`, `esg`, or `score` column, or
 all three pillar columns: `environmental`, `social`, and `governance`. If it also
 contains `sector`, `industry`, `node`, or `code`, targets are aligned to graph
-nodes by that column; otherwise scores are resized to the node count for local
-experimentation.
+nodes by that column; otherwise the score row count must match the graph node count.
 
 ## Tests
 
