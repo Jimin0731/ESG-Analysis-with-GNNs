@@ -20,8 +20,8 @@ def create_synthetic_bea_workbook(path, *, metadata_rows: bool = True, ambiguous
         worksheet.append(["Industry Code", "Industry Name", "Value"])
     else:
         worksheet.append(["Industry Code", "Industry Name", "2020", "2021"])
-    worksheet.append(["11", "Agriculture [1]", "1,000", "1,100"])
-    worksheet.append(["21", "Mining", "(D)", "900"])
+    worksheet.append(["0011", "Agriculture [1]", "1,000", "1,100"])
+    worksheet.append(["0021", "Mining", "(D)", "900"])
     workbook.save(path)
 
 
@@ -72,6 +72,12 @@ def test_xlsx_comma_formatted_numbers(tmp_path):
     assert load_bea_table(path).data.loc[0, "2020"] == 1000
 
 
+def test_xlsx_preserves_leading_zero_industry_codes(tmp_path):
+    path = tmp_path / "synthetic_leading_zero_codes.xlsx"
+    create_synthetic_bea_workbook(path, metadata_rows=False)
+    assert load_bea_table(path).data["industry_code"].tolist() == ["0011", "0021"]
+
+
 def test_xlsx_suppressed_value_handling(tmp_path):
     path = tmp_path / "synthetic_suppressed.xlsx"
     create_synthetic_bea_workbook(path, metadata_rows=False)
@@ -112,8 +118,23 @@ def test_suppressed_value_handling():
 def test_empty_input(tmp_path):
     path = tmp_path / "empty.csv"
     path.write_text("")
-    with pytest.raises(Exception):
+    with pytest.raises(DataValidationError):
         load_bea_table(path)
+
+
+def test_preserves_meaningful_parenthesized_industry_names(tmp_path):
+    path = tmp_path / "parentheses.csv"
+    path.write_text("Industry Code,Industry Name,2020\n0031,Finance and insurance (except funds),42\n")
+    result = load_bea_table(path)
+    assert result.data.loc[0, "industry_name"] == "Finance and insurance (except funds)"
+    assert result.data.loc[0, "industry_code"] == "0031"
+
+
+def test_invalid_explicit_header_row_errors(tmp_path):
+    path = tmp_path / "short.csv"
+    path.write_text("Industry Code,Industry Name,2020\n0011,Agriculture,1\n")
+    with pytest.raises(DataValidationError):
+        load_bea_table(path, header_row=10)
 
 
 def test_ambiguous_schema():
