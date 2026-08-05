@@ -7,12 +7,15 @@ def activation(name: str):
     return {"relu":nn.ReLU(),"gelu":nn.GELU(),"tanh":nn.Tanh(),"identity":nn.Identity()}[name]
 
 class DirectedGCNLayer(nn.Module):
-    """h'_i = W_self h_i + W_msg mean_{j -> i}(h_j); stored edges are never symmetrized."""
+    """h'_i = W_self h_i + W_msg weighted_mean_{j -> i}(h_j); stored edges are never symmetrized."""
     def __init__(self, dim: int): super().__init__(); self.self_linear=nn.Linear(dim,dim); self.msg_linear=nn.Linear(dim,dim)
-    def forward(self,x,edge_index):
+    def forward(self,x,edge_index,edge_weight=None):
         src,dst=edge_index; agg=torch.zeros_like(x)
         if src.numel():
-            agg.index_add_(0,dst,x[src]); deg=torch.zeros(x.shape[0],device=x.device,dtype=x.dtype); deg.index_add_(0,dst,torch.ones_like(dst,dtype=x.dtype)); agg=agg/deg.clamp_min(1).unsqueeze(-1)
+            weights = torch.ones(src.shape[0], device=x.device, dtype=x.dtype) if edge_weight is None else edge_weight.to(x.dtype)
+            agg.index_add_(0,dst,x[src] * weights.unsqueeze(-1))
+            deg=torch.zeros(x.shape[0],device=x.device,dtype=x.dtype); deg.index_add_(0,dst,weights)
+            agg=torch.where(deg.unsqueeze(-1)>0, agg/deg.clamp_min(torch.finfo(x.dtype).tiny).unsqueeze(-1), torch.zeros_like(agg))
         return self.self_linear(x)+self.msg_linear(agg)
 
 class DirectedGATLayer(nn.Module):

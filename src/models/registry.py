@@ -15,7 +15,7 @@ _register("mlp",MLPBaseline,ModelCapabilities("mlp",False,False,False,False,Fals
 _register("gcn",DirectedGCN,ModelCapabilities("gcn",True,True,False,False,False,True))
 _register("gat",DirectedGAT,ModelCapabilities("gat",True,True,False,True,False,True))
 _register("weighted_gat",WeightedDirectedGAT,ModelCapabilities("weighted_gat",True,True,True,True,False,True))
-_register("bidirectional_gnn",BidirectionalGNN,ModelCapabilities("bidirectional_gnn",True,True,False,False,True,True,"concat_projection"))
+_register("bidirectional_gnn",BidirectionalGNN,ModelCapabilities("bidirectional_gnn",True,True,True,False,True,True,"concat_projection"))
 assert tuple(_REGISTRY) == CANONICAL_MODEL_NAMES
 
 def available_models() -> tuple[str,...]: return tuple(_REGISTRY)
