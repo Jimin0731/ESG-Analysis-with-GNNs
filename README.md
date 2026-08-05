@@ -1,59 +1,87 @@
 # ESG Analysis with GNNs
 
-This repository provides a lightweight project scaffold for experimenting with
-Environmental, Social, and Governance (ESG) analysis using graph neural networks.
-
-The repository is organized around data ingestion, model components, evaluation
-utilities, visualization helpers, scripts, notebooks, and generated outputs.
+This repository contains notebook experiments and reusable Python modules for
+Environmental, Social, and Governance (ESG) analysis with graph neural networks.
+The reusable pipeline is extracted from the most complete end-to-end notebook,
+`ESG Analysis final ver.ipynb`, which combines data preprocessing, economic
+input-output graph construction, GNN training, evaluation, and visualization.
 
 ## Project structure
 
 ```text
 ESG-Analysis-with-GNNs/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── .env.example
-├── src/
-│   ├── data/
-│   │   ├── preprocessing.py
-│   │   ├── external_data.py
-│   │   └── news_sentiment.py
-│   ├── models/
-│   │   ├── gnn_models.py
-│   │   └── autoencoder.py
-│   ├── evaluation/
-│   │   ├── metrics.py
-│   │   └── interpretability.py
-│   └── visualization/
-│       └── attention.py
+├── ESG Analysis final ver.ipynb        # canonical source notebook
+├── Data Preprocess.ipynb               # preprocessing exploration
+├── Real GDP data + real env data ver3.ipynb
+├── Heterophily ver6.ipynb
+├── Attention_weight_visualization_FULL.py
 ├── scripts/
+│   ├── run_pipeline.py                 # reusable CLI pipeline
 │   ├── export_news_db.py
 │   └── inspect_bea_headers.py
-├── notebooks/
-│   ├── 01_data_pipeline.ipynb
-│   ├── 02_model_comparison.ipynb
-│   ├── 03_temporal_evaluation.ipynb
-│   └── 04_interpretability.ipynb
-├── results/
-│   ├── figures/
-│   └── metrics/
-└── reports/
-    └── final_presentation.pdf
+├── src/
+│   ├── data/preprocessing.py           # I/O matrix, ESG target, graph features
+│   ├── models/gnn_models.py            # EconomicESGGNN and fallback graph conv
+│   ├── training.py                     # train/evaluate helpers
+│   └── visualization/attention.py
+├── tests/test_pipeline.py
+└── requirements.txt
 ```
 
-## Quick start
+## Setup
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python scripts/export_news_db.py
-python scripts/inspect_bea_headers.py
 ```
 
-The modules use standard-library baselines where possible so the scaffold can be
-smoke-tested before full GNN dependencies and production ESG datasets are added.
+`torch-geometric` is optional. If it is installed, `EconomicESGGNN` uses PyG GCN
+layers. If it is not installed, the model automatically uses a dense weighted
+message-passing fallback so the pipeline and tests can run in constrained
+environments.
 
-Binary outputs such as PNG figures and PDF reports should be generated locally
-and are not tracked in this scaffold.
+## Smoke-test execution
+
+Run the full extracted workflow on deterministic in-repository sample data:
+
+```bash
+python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8
+# writes results/metrics/smoke_test_metrics.json by default
+```
+
+This mode does not use external data, API credentials, raw datasets, databases,
+or generated output files.
+
+## Running with local research data
+
+Keep private datasets and credentials outside git. Then provide local file paths:
+
+```bash
+python scripts/run_pipeline.py \
+  --io-matrix /path/to/REAL_USE.xlsx \
+  --esg-data /path/to/esg_scores.csv \
+  --epochs 300 \
+  --hidden-dim 64 \
+  --metrics-output results/metrics/local_metrics.json
+```
+
+The I/O matrix may be CSV, XLS, or XLSX with industries in both rows and columns.
+The ESG CSV should include either an `esg_score`, `esg`, or `score` column, or
+all three pillar columns: `environmental`, `social`, and `governance`. If it also
+contains `sector`, `industry`, `node`, or `code`, targets are aligned to graph
+nodes by that column; otherwise scores are resized to the node count for local
+experimentation.
+
+## Tests
+
+```bash
+python -m pytest tests
+```
+
+## Notes for future migration
+
+The original notebooks are intentionally preserved. Remaining migration work is
+to move additional notebook-only visualizations, full temporal validation reports,
+NewsAPI sentiment ingestion, and large-dataset experiment configuration into
+versioned modules without committing credentials or raw data.

@@ -57,7 +57,7 @@ defload_and_process_news_data (self, api_key: str, num_articles: int=20)␣
 """Through news API, collect news by industry and analyze sentiment."""
 print(f"Collect news data and start analyzing sentiment (Maximum ␣
 ↪{num_articles }by industries)... ")
-if notapi_key orapi_key =='e086209f280f46a482442a237d195a11 ':
+if notapi_key orapi_key =='YOUR_NEWS_API_KEY':
 print("￿ News API key is not provided. Skip sentiment analysis. ")
 return
 newsapi =NewsApiClient(api_key =api_key)
@@ -1625,7 +1625,7 @@ self.preprocessor .load_real_env_data( 'ghgp_data_2023.xlsx ')
 env_tax_data =self.preprocessor .
 ↪load_environmental_taxes( 'Environmental Taxes.csv ')
 self.preprocessor .
-↪load_and_process_news_data(api_key ='e086209f280f46a482442a237d195a11 ')
+↪load_and_process_news_data(api_key ='YOUR_NEWS_API_KEY')
 # 6. Generate integrated features
 self.data=self.preprocessor .create_integrated_features()
 # 7. Generate ESG targets
