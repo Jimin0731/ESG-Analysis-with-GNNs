@@ -239,3 +239,7 @@ The canonical implementation should be assembled from components rather than cop
 ### Migration PR 4 — implemented
 
 Implemented typed, framework-neutral feature blocks, deterministic feature assembly, chronological train/validation/test splitting, and train-only preprocessing. Design decisions are intentionally narrow: feature rows are keyed by `(node_id, period)` with integer annual periods; feature names are namespaced; provenance/report objects are JSON-serializable; temporal features use only prior periods by default; preprocessing state stores deterministic statistics instead of serialized estimator objects. This PR does not implement targets or claim that target leakage is fully resolved; target construction remains Migration PR 5 work.
+
+### Migration PR 5 — implemented
+
+Implemented explicit framework-neutral target construction, target assembly, and deterministic direct-lineage leakage auditing. Observed targets must be configured by name and aligned with integer annual forecast horizons. Legacy notebook-derived proxy targets remain available only for explicit reproduction with `allow_derived_targets=True`; they are not independently observed ground truth. Before supervised modelling, direct target columns and the declared source features for selected derived targets must be excluded or the audit must fail. This does not claim that all possible leakage has been eliminated; speculative correlation-based detection remains out of scope.

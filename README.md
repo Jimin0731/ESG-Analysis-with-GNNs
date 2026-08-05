@@ -193,3 +193,31 @@ Train-only preprocessing is implemented by `TrainOnlyPreprocessor`. Missing-valu
 A small synthetic configuration is available at `configs/features.example.yaml`. For example, it references invented CSV fixtures under `tests/fixtures/features/`, enables macro/environmental/ESG/temporal blocks, configures chronological ratios, and selects train-median imputation with standard scaling.
 
 The legacy `features_from_io_matrix()` helper in `src/data/preprocessing.py` remains for backward-compatible smoke tests and fits a scaler to one smoke matrix. It is not the train-only research preprocessing path. Migration PR 4 intentionally does not construct targets, labels, outcomes, or leakage-derived target proxies; target work is deferred to a later migration PR.
+
+## Migration PR 5 target construction and direct leakage audit
+
+Research target construction now lives in the framework-neutral `src/targets/` package. Observed targets are explicitly configured long-form outcome columns keyed by `(node_id, period)`, while derived targets are opt-in legacy proxy formulas reconstructed from named input features. The existing `targets_from_esg_frame()` helper in `src/data/preprocessing.py` remains only a backward-compatible single-target smoke helper; it is not the research target-construction or leakage-audit path.
+
+Forecast horizons are annual integers. With horizon `0`, feature period `t` aligns to an observation at `t`; with horizon `1`, feature period `t` aligns to the observed outcome at `t+1`, while the output key remains the feature row key. Target provenance records the target name, observed/derived status, source columns or source features, formula or transformation, horizon semantics, missing-value policy, units when known, and construct-validity limitations. No target is automatically treated as independently valid ground truth.
+
+Notebook-derived proxies such as ESG risk, economic impact, volatility, transition cost, and compliance probability are mechanically constructed from model input features. That direct lineage creates leakage if those source features are also used for supervised modelling, so derived proxies are disabled by default and require `allow_derived_targets=True` for explicit reproduction. The leakage auditor supports `error`, which rejects direct findings, and `drop_declared_sources`, which removes only direct target columns and the union of declared source features for selected derived targets; unrelated features are preserved.
+
+Minimal synthetic examples are provided under `tests/fixtures/targets/`, with a text-only configuration at `configs/targets.example.yaml`:
+
+```python
+import pandas as pd
+from src.targets import build_observed_target_block, audit_and_filter_features
+
+observed = pd.read_csv("tests/fixtures/targets/observed_esg_outcomes.csv")
+block = build_observed_target_block(
+    observed,
+    target_columns=["esg_score"],
+    forecast_horizon=0,
+    missing_policy="preserve",
+)
+safe_features, removed, audit_report, reasons = audit_and_filter_features(
+    ["environmental_score", "safe_feature"],
+    block,
+    policy="drop_declared_sources",
+)
+```
