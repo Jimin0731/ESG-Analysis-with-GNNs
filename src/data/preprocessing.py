@@ -115,7 +115,11 @@ def graph_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray, percentile: float
     threshold = np.percentile(positive, percentile)
     sources, targets = np.where(matrix > threshold)
     weights = np.log(matrix[sources, targets] + 1e-9)
-    weights = (weights - weights.mean()) / (weights.std() + 1e-9)
+    if weights.size <= 1:
+        weights = np.zeros_like(weights, dtype=float)
+    else:
+        std = float(weights.std())
+        weights = np.zeros_like(weights, dtype=float) if std == 0.0 else (weights - weights.mean()) / (std + 1e-9)
     return np.vstack([sources, targets]).astype(np.int64), weights.astype(np.float32)
 
 

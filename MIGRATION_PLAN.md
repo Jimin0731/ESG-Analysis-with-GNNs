@@ -173,11 +173,11 @@ The canonical implementation should be assembled from components rather than cop
 - Add fixtures based on `header file check.ipynb`.
 - Add ESG loader validation and mapping-coverage reports.
 
-### PR 3 — Graph backends
+### PR 3 — Graph backends — implemented
 
-- Implement and test separate `use_make` and `icio` graph builders.
-- Preserve sector labels and raw weights.
-- Test alignment, edge density, Leontief fallback and invalid inputs.
+- Implemented separate `use_make` and `icio` graph builders with framework-neutral contracts.
+- Preserved sector/industry labels and raw economic flows separately from model weights.
+- Added focused tests for alignment, edge density, Leontief fallback, thresholding, self-loop policy and invalid inputs.
 
 ### PR 4 — Feature blocks and temporal splitting
 
