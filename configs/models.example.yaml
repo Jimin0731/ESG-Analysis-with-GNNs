@@ -1,0 +1,56 @@
+# Text-only synthetic model registry examples for Migration PR 6.
+# Edge convention for graph models: edge_index[0] is source, edge_index[1] is target.
+# Feature matrices supplied to models must already pass the PR 5 direct-lineage leakage audit.
+target_names: &targets
+  - target__observed_esg_score
+  - target__observed_real_output_growth
+models:
+  mlp:
+    name: mlp
+    input_dim: 8
+    hidden_dim: 16
+    num_layers: 2
+    dropout: 0.10
+    target_names: *targets
+    seed: 7
+    notes: graph-independent baseline; ignores edge_index and edge_weight
+  gcn:
+    name: gcn
+    input_dim: 8
+    hidden_dim: 16
+    num_layers: 2
+    dropout: 0.10
+    target_names: *targets
+    seed: 7
+    notes: direction-preserving unweighted incoming-neighbor mean aggregation
+  gat:
+    name: gat
+    input_dim: 8
+    hidden_dim: 16
+    num_layers: 2
+    dropout: 0.10
+    attention_heads: 2
+    target_names: *targets
+    seed: 7
+    notes: directed attention normalized separately by destination node and head; ignores economic weights
+  weighted_gat:
+    name: weighted_gat
+    input_dim: 8
+    hidden_dim: 16
+    num_layers: 2
+    dropout: 0.10
+    attention_heads: 2
+    target_names: *targets
+    seed: 7
+    notes: directed attention multiplied by explicit non-negative edge_weight before destination normalization
+  bidirectional_gnn:
+    name: bidirectional_gnn
+    input_dim: 8
+    hidden_dim: 16
+    num_layers: 2
+    dropout: 0.10
+    target_names: *targets
+    seed: 7
+    options:
+      combination: concat_projection
+    notes: separate stored-direction and edge_index.flip(0) branches with aligned edge weights
