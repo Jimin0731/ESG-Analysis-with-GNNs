@@ -1,0 +1,28 @@
+observed_targets:
+  path: tests/fixtures/targets/observed_esg_outcomes.csv
+  selected_columns:
+    - esg_score
+  forecast_horizon: 0
+  missing_target_policy: preserve
+next_period_observed_targets:
+  path: tests/fixtures/targets/next_period_economic_outcomes.csv
+  selected_columns:
+    - real_output_growth
+  forecast_horizon: 1
+derived_targets:
+  enabled_by_default: false
+  allow_derived_targets: true
+  legacy_proxy_example:
+    name: target__derived_esg_risk
+    source_features:
+      environmental: environmental_score
+      social: social_score
+      governance: governance_score
+    weights:
+      environmental: 0.34
+      social: 0.33
+      governance: 0.33
+    clip_bounds: [0.0, 1.0]
+leakage:
+  policy: drop_declared_sources
+  fixture_with_deliberate_direct_leakage: tests/fixtures/targets/direct_leakage_case.csv
