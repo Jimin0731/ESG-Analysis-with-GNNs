@@ -41,6 +41,15 @@ layers. If it is not installed, the model automatically uses a dense weighted
 message-passing fallback so the pipeline and tests can run in constrained
 environments.
 
+
+## Security, data, and local configuration
+
+Copy `.env.example` to `.env` only on your local machine and fill in secrets or private paths there. `.env` and local credential files are intentionally ignored; never commit API keys, passwords, tokens, database credentials, private URLs, raw data, caches, SQLite databases, checkpoints, or generated run artifacts.
+
+The optional NewsAPI sentiment path reads `NEWS_API_KEY` from the environment and should skip cleanly when the variable is absent. Dataset paths can also be supplied with environment variables documented in `.env.example`, or by CLI arguments where available. See `DATA_POLICY.md` for the full repository policy and `configs/datasets.yaml` for the machine-readable external dataset inventory.
+
+Credential rotation remains mandatory for any previously exposed secret. Removing a value from the current tree does not remove it from git history; any history rewrite with `git filter-repo` or BFG must be planned separately because it changes commit hashes.
+
 ## Smoke-test execution
 
 Run the full extracted workflow on deterministic in-repository sample data:

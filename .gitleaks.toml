@@ -1,0 +1,6 @@
+title = "ESG Analysis with GNNs Gitleaks configuration"
+
+[allowlist]
+description = "Verified false positives only. Do not add real or historical credentials."
+paths = []
+regexes = []

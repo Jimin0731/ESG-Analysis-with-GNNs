@@ -1,0 +1,133 @@
+datasets:
+  - id: esg_company_data
+    description: Company-level ESG scores and pillar values used to align ESG targets/features to sectors or industries.
+    expected_path: ${ESG_DATA_PATH:-data/external/esg/esg_scores.csv}
+    provider: User-supplied ESG data provider
+    format: csv
+    required: true
+    used_by:
+      - ESG Analysis final ver.ipynb
+      - API added ver5.ipynb
+      - Heterophily ver6.ipynb
+      - time series ver9.ipynb
+      - scripts/run_pipeline.py
+      - src/data/preprocessing.py
+    redistribution: unknown
+    synthetic_fixture_available: true
+  - id: use_table
+    description: BEA or compatible USE input-output table used to construct technical coefficients.
+    expected_path: ${USE_TABLE_PATH:-data/external/io/use_table.xlsx}
+    provider: BEA or user-supplied I/O data
+    format: xlsx
+    required: true
+    used_by: [Epoch 300 + IO data ver2.ipynb, ESG Analysis final ver.ipynb, API added ver5.ipynb, Heterophily ver6.ipynb, time series ver9.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: true
+  - id: make_table
+    description: BEA or compatible MAKE input-output table used with USE tables for A matrix construction.
+    expected_path: ${MAKE_TABLE_PATH:-data/external/io/make_table.xlsx}
+    provider: BEA or user-supplied I/O data
+    format: xlsx
+    required: true
+    used_by: [Epoch 300 + IO data ver2.ipynb, ESG Analysis final ver.ipynb, API added ver5.ipynb, Heterophily ver6.ipynb, time series ver9.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: true
+  - id: oecd_icio_usa_io
+    description: OECD/ICIO USA total input-output table for the US-focused ICIO branch.
+    expected_path: ${ICIO_USA_IO_PATH:-data/external/NATIOTTL/USA2020ttl.csv}
+    provider: OECD ICIO
+    format: csv
+    required: false
+    used_by: [Data Preprocess.ipynb, differentiation top 10.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_real_value_added
+    description: BEA real value added by industry series.
+    expected_path: ${BEA_REAL_VALUE_ADDED_PATH:-data/external/bea/Real Value Added by Industry.xlsx}
+    provider: BEA
+    format: xlsx_or_csv
+    required: false
+    used_by: [Data Preprocess.ipynb, differentiation top 10.ipynb, header file check.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_real_intermediate_input
+    description: BEA real intermediate input by industry series.
+    expected_path: ${BEA_REAL_INTERMEDIATE_INPUT_PATH:-data/external/bea/Real Intermediate Input by Industry.xlsx}
+    provider: BEA
+    format: xlsx
+    required: false
+    used_by: [differentiation top 10.ipynb, header file check.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_intermediate_input_price_indexes
+    description: BEA chain-type price indexes for intermediate inputs by industry.
+    expected_path: ${BEA_INTERMEDIATE_INPUT_PRICE_INDEX_PATH:-data/external/bea/Chain-Type Price Indexes for Intermediate Inputs by Industry.xlsx}
+    provider: BEA
+    format: xlsx
+    required: false
+    used_by: [differentiation top 10.ipynb, header file check.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_real_gross_output
+    description: BEA real gross output by industry series.
+    expected_path: ${BEA_REAL_GROSS_OUTPUT_PATH:-data/external/bea/Real Gross Output by Industry.xlsx}
+    provider: BEA
+    format: xlsx
+    required: false
+    used_by: [differentiation top 10.ipynb, header file check.ipynb, ESG Analysis final ver.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_gross_output_price_indexes
+    description: BEA chain-type price indexes for gross output by industry.
+    expected_path: ${BEA_GROSS_OUTPUT_PRICE_INDEX_PATH:-data/external/bea/Chain-Type Price Indexes for Gross Output by Industry.xlsx}
+    provider: BEA
+    format: xlsx
+    required: false
+    used_by: [differentiation top 10.ipynb, header file check.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: bea_gross_output
+    description: BEA gross output by industry series.
+    expected_path: ${BEA_GROSS_OUTPUT_PATH:-data/external/bea/Gross Output by Industry.xlsx}
+    provider: BEA
+    format: xlsx
+    required: false
+    used_by: [differentiation top 10.ipynb, header file check.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: emissions_ghgp_data
+    description: EPA GHGP or compatible emissions workbook with industry-level reported direct emissions.
+    expected_path: ${EMISSIONS_GHGP_PATH:-data/external/environment/emissions_ghgp.xlsx}
+    provider: EPA GHGP or compatible source
+    format: xlsx
+    required: false
+    used_by: [Real GDP data + real env data ver3.ipynb, API added ver5.ipynb, ESG Analysis final ver.ipynb, Heterophily ver6.ipynb, time series ver9.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: environmental_tax_data
+    description: Environmental-tax data used as an environmental feature block.
+    expected_path: ${ENVIRONMENTAL_TAX_PATH:-data/external/environment/environmental_taxes.csv}
+    provider: OECD or user-supplied environmental tax source
+    format: csv
+    required: false
+    used_by: [Real GDP data + real env data ver3.ipynb, API added ver5.ipynb, ESG Analysis final ver.ipynb, Heterophily ver6.ipynb, time series ver9.ipynb]
+    redistribution: unknown
+    synthetic_fixture_available: false
+  - id: optional_news_api_data
+    description: Optional NewsAPI responses for ESG sentiment enrichment; fetched only when NEWS_API_KEY is set locally.
+    expected_path: ${NEWS_API_CACHE_DIR:-data/cache/newsapi/}
+    provider: NewsAPI
+    format: json
+    required: false
+    used_by: [API added ver5.ipynb, ESG Analysis final ver.ipynb, Heterophily ver6.ipynb, time series ver9.ipynb]
+    redistribution: not_allowed_or_requires_provider_terms_review
+    synthetic_fixture_available: false
+  - id: optional_sqlite_news_database
+    description: Optional local SQLite database containing articles for export or sentiment workflows.
+    expected_path: ${NEWS_DB_PATH:-data/local/news_monitoring.db}
+    provider: User-generated local cache/database
+    format: sqlite
+    required: false
+    used_by: [db_to_csv.ipynb, scripts/export_news_db.py]
+    redistribution: not_allowed
+    synthetic_fixture_available: false

@@ -16,3 +16,27 @@ venv/
 
 # System files
 .DS_Store
+
+# Local secrets and machine-specific configuration
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+secrets.*
+credentials.*
+
+# Local data, caches, databases, and run artifacts
+data/
+cache/
+runs/
+outputs/
+artifacts/
+*.sqlite
+*.sqlite3
+*.db
+*.ckpt
+*.pkl
+*.joblib
+*.onnx
+pipeline_metrics.json

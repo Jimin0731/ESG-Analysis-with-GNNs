@@ -23,10 +23,10 @@ from io importStringIO
 import nltk
 from newsapi importNewsApiClient
 from nltk .sentiment .vader importSentimentIntensityAnalyzer
-/Users/jiminbyun/anaconda3/lib/python3.11/site-
+<local user path omitted>
 packages/torch_geometric/typing.py:124: UserWarning: An issue occurred while
 importing 'torch-sparse'. Disabling its usage. Stacktrace:
-dlopen(/Users/jiminbyun/anaconda3/lib/python3.11/site-
+dlopen(<local user path omitted>
 packages/torch_sparse/_convert_cpu.so, 0x0006): symbol not found in flat
 namespace '__ZN2at8internal15invoke_parallelExxxRKNSt3__18functionIFvxxEEE'
 warnings.warn(f"An issue occurred while importing 'torch-sparse'. "
@@ -1625,7 +1625,7 @@ self.preprocessor .load_real_env_data( 'ghgp_data_2023.xlsx ')
 env_tax_data =self.preprocessor .
 ↪load_environmental_taxes( 'Environmental Taxes.csv ')
 self.preprocessor .
-↪load_and_process_news_data(api_key=os.getenv('NEWSAPI_KEY', ''))
+↪load_and_process_news_data(api_key=os.getenv('NEWS_API_KEY', ''))
 # 6. Generate integrated features
 self.data=self.preprocessor .create_integrated_features()
 # 7. Generate ESG targets
