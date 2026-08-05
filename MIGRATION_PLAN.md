@@ -232,3 +232,6 @@ The canonical implementation should be assembled from components rather than cop
 - Attention/shock visualizations are reproducible from saved predictions/checkpoints.
 - CI runs unit tests and a deterministic end-to-end smoke experiment.
 - Original research notebooks remain available for traceability but are no longer the production execution path.
+
+
+- Migration PR 2 implemented typed data contracts, BEA/ESG loaders, and synthetic mapping coverage utilities without adding real datasets.

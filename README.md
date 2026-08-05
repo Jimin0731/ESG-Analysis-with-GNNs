@@ -91,3 +91,50 @@ The original notebooks are intentionally preserved. Remaining migration work is
 to move additional notebook-only visualizations, full temporal validation reports,
 NewsAPI sentiment ingestion, and large-dataset experiment configuration into
 versioned modules without committing credentials or raw data.
+
+## Typed data loaders (Migration PR 2)
+
+This repository now includes dependency-light, dataclass-based contracts for validating dataset inventory entries and local data-loader configuration. The loaders are intended to fail loudly on invalid schemas instead of inventing synthetic replacement values or silently imputing provider data.
+
+Real ESG, BEA, emissions, news, or I/O datasets must be placed locally according to `DATA_POLICY.md`; do not commit licensed provider files, credentials, API keys, personal absolute paths, or downloaded raw datasets.
+
+Supported loader formats are CSV, XLS, and XLSX for BEA-style tables, and CSV, XLS, and XLSX for ESG score files. `configs/pipeline.example.yaml` shows repository-relative synthetic example paths only.
+
+### BEA loader example
+
+```python
+from src.data.bea import load_bea_table
+
+result = load_bea_table("tests/fixtures/bea/header_first.csv", header_row=0)
+print(result.schema.time_value_columns)
+print(result.data.head())
+```
+
+The BEA loader can use an explicit header row or detect one from a bounded range. It normalizes column names, preserves source industry codes as strings, detects year/period columns, strips footnote markers, converts comma-formatted numeric cells, and treats suppressed values such as `(D)` or `--` as missing. Ambiguous industry columns, missing industry columns, empty files, and files without usable time/value columns raise validation errors.
+
+### ESG loader example
+
+```python
+from src.data.contracts import MissingValuePolicy
+from src.data.esg import load_esg_scores
+
+result = load_esg_scores(
+    "tests/fixtures/esg/valid_esg.csv",
+    missing_score_policy=MissingValuePolicy.PRESERVE,
+)
+print(result.column_mapping)
+print(result.row_count, result.duplicate_count)
+```
+
+The ESG loader validates required entity, industry, and overall-score columns through configurable aliases. It rejects empty files, missing required columns, duplicate entity-period records unless an explicit supported duplicate policy is provided, non-numeric or infinite scores, scores outside the configured range, and missing industry identifiers. Missing scores are handled explicitly with `error`, `drop`, or `preserve` policies; the loader does not impute ESG values or construct model targets.
+
+### Mapping coverage example
+
+```python
+from src.data.mapping import map_industries
+
+mapped, report = map_industries(frame, "industry", {"Utilities": "UTIL"}, min_coverage=0.8)
+print(report.row_coverage_ratio, report.unmatched_values)
+```
+
+The mapping utility maps source industry names or codes to canonical IDs while preserving unmatched values and row counts. Its coverage report includes total rows, unique source industries, matched and unmatched row counts, matched and unmatched unique industry counts, coverage ratios, and sorted unmatched values. Strict mode raises a validation error when coverage is below the configured threshold. Large production mapping dictionaries are intentionally deferred to a later industry-mapping PR.
