@@ -10,7 +10,17 @@ regex = '''(?i)(news[_-]?api[_-]?key|newsapi[_-]?key|api[_-]?key)\s*[:=]\s*["']?
 secretGroup = 2
 keywords = ["news", "api", "key", "newsapi", "NEWS_API_KEY"]
 
-[allowlist]
-description = "Verified false positives only. Do not add real or historical credentials."
-paths = []
-regexes = []
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "Allow only the non-reversible NewsAPI SHA-256 fingerprint used by the security checker."
+  condition = "AND"
+  regexTarget = "line"
+  regexes = [
+    '''KNOWN_NEWSAPI_SHA256\s*=\s*["'][0-9a-f]{64}["']'''
+  ]
+  paths = [
+    '''^scripts/security_inventory_check\.py$''',
+    '''^tests/test_security_inventory\.py$'''
+  ]
