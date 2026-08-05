@@ -138,3 +138,44 @@ print(report.row_coverage_ratio, report.unmatched_values)
 ```
 
 The mapping utility maps source industry names or codes to canonical IDs while preserving unmatched values and row counts. Its coverage report includes total rows, unique source industries, matched and unmatched row counts, matched and unmatched unique industry counts, coverage ratios, and sorted unmatched values. Strict mode raises a validation error when coverage is below the configured threshold. Large production mapping dictionaries are intentionally deferred to a later industry-mapping PR.
+
+## Economic graph backends (Migration PR 3)
+
+The repository now separates notebook-derived economic graph construction into two framework-neutral backends under `src.graphs`:
+
+* `use_make` consumes already loaded USE and MAKE tables. It explicitly treats USE as commodity-by-sector and MAKE as sector-by-commodity by default, aligns common commodity and sector labels, computes notebook-derived `B` and `D` components, and builds the technical-coefficient matrix `A = B @ D` before thresholding retained directed sector-to-sector edges.
+* `icio` consumes OECD/ICIO-style transaction data either as a square labelled transaction matrix or a wide table with an explicit source-industry column and destination-industry columns. ICIO industry codes are preserved as strings, including leading zeros, with only surrounding whitespace normalized.
+
+Synthetic USE/MAKE example:
+
+```python
+import pandas as pd
+from src.graphs import UseMakeGraphConfig, build_economic_graph
+
+use = pd.DataFrame([[10, 2], [1, 8]], index=["C1", "C2"], columns=["S1", "S2"])
+make = pd.DataFrame([[9, 1], [2, 7]], index=["S1", "S2"], columns=["C1", "C2"])
+snapshot = build_economic_graph(
+    "use_make",
+    use,
+    make,
+    config=UseMakeGraphConfig(threshold_policy="absolute", threshold_value=0.0),
+)
+```
+
+Synthetic ICIO example:
+
+```python
+import pandas as pd
+from src.graphs import ICIOGraphConfig, build_economic_graph
+
+icio = pd.DataFrame({"source_industry": ["01", "02"], "01": [5, 0], "02": [7, 3]})
+snapshot = build_economic_graph(
+    "icio",
+    icio,
+    config=ICIOGraphConfig(source_column="source_industry", include_self_loops=False),
+)
+```
+
+Edges are directed from the source row entity to the destination column entity. Threshold configuration is explicit (`absolute` or `percentile`), and self-loops are included only when requested. Every `GraphSnapshot` keeps raw unmodified economic flows separately from model-ready `edge_weight`; configured model transforms include raw, `log1p`, row-normalized and globally standardized weights. Leontief computation uses an exact inverse when numerically appropriate and records any configured pseudo-inverse or regularized fallback in `LeontiefComputationReport`; a successful fallback is diagnostic only, not proof that the economic system is valid.
+
+Real datasets must remain local and untracked under `DATA_POLICY.md`. Do not commit licensed provider files, generated graph outputs, credentials, or binary fixtures.
