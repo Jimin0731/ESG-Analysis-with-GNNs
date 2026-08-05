@@ -6,6 +6,7 @@ from .mlp import MLPBaseline
 from .gcn import DirectedGCN
 from .gat import DirectedGAT, WeightedDirectedGAT
 from .directed import BidirectionalGNN
+from .gpr import GPRGNN
 
 _REGISTRY: OrderedDict[str, tuple[type[torch.nn.Module], ModelCapabilities]] = OrderedDict()
 def _register(name, cls, cap):
@@ -16,6 +17,7 @@ _register("gcn",DirectedGCN,ModelCapabilities("gcn",True,True,False,False,False,
 _register("gat",DirectedGAT,ModelCapabilities("gat",True,True,False,True,False,True))
 _register("weighted_gat",WeightedDirectedGAT,ModelCapabilities("weighted_gat",True,True,True,True,False,True))
 _register("bidirectional_gnn",BidirectionalGNN,ModelCapabilities("bidirectional_gnn",True,True,True,False,True,True,"concat_projection"))
+_register("gpr_gnn",GPRGNN,ModelCapabilities("gpr_gnn",True,True,True,False,False,True))
 assert tuple(_REGISTRY) == CANONICAL_MODEL_NAMES
 
 def available_models() -> tuple[str,...]: return tuple(_REGISTRY)

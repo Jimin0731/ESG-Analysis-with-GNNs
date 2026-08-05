@@ -1,0 +1,19 @@
+# Synthetic configuration example; no dataset paths or observed records.
+gpr_gnn:
+  alpha: 0.1
+  propagation_steps: 10
+  graph_direction: stored # also supported: reverse
+  self_loop_weight: 1.0
+ablation_grid:
+  alphas: [0.0, 0.1, 0.5]
+  propagation_steps: [0, 5, 10]
+  graph_directions: [stored, reverse]
+economic_gae:
+  input_dim: 12
+  hidden_dim: 32
+  latent_dim: 8
+  graph_direction: stored
+  feature_loss_weight: 1.0
+  structure_loss_weight: 1.0
+  anomaly_structural_coefficient: 0.5
+  negative_sampling_seed: 42

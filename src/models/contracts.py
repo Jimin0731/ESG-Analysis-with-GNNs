@@ -5,7 +5,7 @@ from typing import Any, Mapping
 import math
 import torch
 
-CANONICAL_MODEL_NAMES=("mlp","gcn","gat","weighted_gat","bidirectional_gnn")
+CANONICAL_MODEL_NAMES=("mlp","gcn","gat","weighted_gat","bidirectional_gnn","gpr_gnn")
 
 class ModelValidationError(ValueError):
     """Raised when model configuration, inputs, or outputs violate contracts."""
@@ -31,6 +31,10 @@ class ModelConfig:
     residual: bool = True
     seed: int | None = None
     options: Mapping[str, Any] = field(default_factory=dict)
+    alpha: float = 0.1
+    propagation_steps: int = 10
+    graph_direction: str = "stored"
+    self_loop_weight: float = 1.0
     def __post_init__(self):
         if self.name not in CANONICAL_MODEL_NAMES: raise ModelValidationError(f"unsupported model name: {self.name}")
         _pos_int("input_dim", self.input_dim); _pos_int("hidden_dim", self.hidden_dim); _pos_int("num_layers", self.num_layers)
@@ -45,6 +49,12 @@ class ModelConfig:
         if self.name in {"gat","weighted_gat"} and self.hidden_dim % int(self.attention_heads) != 0: raise ModelValidationError("hidden_dim must be divisible by attention_heads")
         if self.seed is not None: _pos_int("seed", self.seed)
         if self.activation not in {"relu","gelu","tanh","identity"}: raise ModelValidationError("unsupported activation")
+        _finite_num("alpha", self.alpha)
+        if not 0.0 <= float(self.alpha) <= 1.0: raise ModelValidationError("alpha must be in [0, 1]")
+        if isinstance(self.propagation_steps,bool) or not isinstance(self.propagation_steps,int) or self.propagation_steps < 0: raise ModelValidationError("propagation_steps must be a non-negative integer")
+        if self.graph_direction not in {"stored","reverse"}: raise ModelValidationError("graph_direction must be stored or reverse")
+        _finite_num("self_loop_weight", self.self_loop_weight)
+        if float(self.self_loop_weight) < 0: raise ModelValidationError("self_loop_weight must be non-negative")
         allowed={"combination","weighted"}
         bad=set(self.options)-allowed
         if bad: raise ModelValidationError(f"unsupported configuration keys: {sorted(bad)}")
