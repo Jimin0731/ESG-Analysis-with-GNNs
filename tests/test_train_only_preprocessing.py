@@ -1,18 +1,66 @@
-import numpy as np, pandas as pd, pytest
+import warnings
+import numpy as np
+import pandas as pd
+import pytest
+from src.features.contracts import FeatureValidationError, PreprocessingConfig
 from src.features.preprocessing import TrainOnlyPreprocessor
-from src.features.contracts import PreprocessingConfig, FeatureValidationError
-def frame(out=1000): return pd.DataFrame({'period':[2020,2021,2022,2023],'f1':[1.,3.,out,out],'f2':[5.,5.,5.,5.],'f3':[np.nan,2.,9.,9.]})
-def test_train_only_outlier_invariance_and_zero_variance():
-    mask=np.array([1,1,0,0],bool)
-    p=TrainOnlyPreprocessor(PreprocessingConfig('train_mean','standard')).fit(frame(),feature_names=('f1','f2','f3'),train_mask=mask,periods=frame().period)
-    state=p.state_.to_json_dict(); X,miss=p.transform(frame())
-    p2=TrainOnlyPreprocessor(PreprocessingConfig('train_mean','standard')).fit(frame(999999),feature_names=('f1','f2','f3'),train_mask=mask,periods=frame().period)
-    assert p2.state_.to_json_dict()==state
-    assert np.isfinite(X).all() and 'f2' in p.state_.zero_variance_features and miss[0,2]
-def test_missing_and_schema_errors():
-    mask=np.array([1,1,0],bool); df=pd.DataFrame({'period':[2020,2021,2022],'a':[np.nan,np.nan,1.]})
-    with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig('train_median','none')).fit(df,feature_names=('a',),train_mask=mask,periods=df.period)
-    with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig('constant','none')).fit(df,feature_names=('a',),train_mask=mask,periods=df.period)
-    p=TrainOnlyPreprocessor(PreprocessingConfig('constant','none',0)).fit(df,feature_names=('a',),train_mask=mask,periods=df.period)
-    with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig()).transform(df)
-    with pytest.raises(KeyError): p.transform(pd.DataFrame({'b':[1]}))
+
+def frame(out=1000.0):
+    return pd.DataFrame({'prep__f1':[1.0,3.0,out,out], 'prep__f2':[5.0,5.0,5.0,5.0], 'prep__f3':[np.nan,2.0,9.0,9.0]})
+def periods(): return pd.Series([2020,2021,2022,2023])
+def mask(): return np.array([True,True,False,False])
+
+def fit_state(out=1000.0, policy='train_mean'):
+    p=TrainOnlyPreprocessor(PreprocessingConfig(policy,'standard')).fit(frame(out),feature_names=tuple(frame().columns),train_mask=mask(),periods=periods())
+    return p
+
+def test_holdout_changes_do_not_change_fitted_state():
+    state1=fit_state(1000).state_.to_json_dict()
+    state2=fit_state(999999).state_.to_json_dict()
+    assert state1['imputation_values']==state2['imputation_values']
+    assert state1['means']==state2['means']
+    assert state1['scales']==state2['scales']
+    assert state1['zero_variance_features']==state2['zero_variance_features']
+    assert state1['fit_periods']==state2['fit_periods']
+
+def test_zero_variance_and_finite_transform():
+    p=fit_state()
+    X,missing=p.transform(frame()[list(frame().columns)])
+    assert np.isfinite(X).all()
+    assert 'prep__f2' in p.state_.zero_variance_features
+    assert missing[0,2]
+
+def test_train_median_uses_no_holdout():
+    p=TrainOnlyPreprocessor(PreprocessingConfig('train_median','none')).fit(frame(),feature_names=tuple(frame().columns),train_mask=mask(),periods=periods())
+    assert p.state_.imputation_values['prep__f3']==2.0
+
+def test_all_training_missing_and_constant_policy():
+    df=pd.DataFrame({'prep__a':[np.nan,np.nan,1.0]}); m=np.array([True,True,False]); per=pd.Series([2020,2021,2022])
+    with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig('train_mean','none')).fit(df,feature_names=('prep__a',),train_mask=m,periods=per)
+    with pytest.raises(FeatureValidationError): PreprocessingConfig('constant','none')
+    p=TrainOnlyPreprocessor(PreprocessingConfig('constant','none',0.0)).fit(df,feature_names=('prep__a',),train_mask=m,periods=per)
+    assert p.transform(df)[0][0,0] == 0.0
+
+def test_schema_and_public_exception_normalization():
+    p=fit_state()
+    with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig()).transform(frame())
+    with pytest.raises(FeatureValidationError): p.transform(frame().rename(columns={'prep__f1':'prep__renamed'}))
+    with pytest.raises(FeatureValidationError): p.transform(frame()[['prep__f2','prep__f1','prep__f3']])
+    with pytest.raises(FeatureValidationError): p.transform(frame().assign(prep__extra=1.0))
+
+def test_fit_input_validation():
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=(),train_mask=mask(),periods=periods())
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=('prep__f1','prep__f1'),train_mask=mask(),periods=periods())
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=('prep__missing',),train_mask=mask(),periods=periods())
+    bad=frame(); bad.loc[0,'prep__f1']=np.inf
+    with pytest.raises(FeatureValidationError): fit_state().fit(bad,feature_names=tuple(frame().columns),train_mask=mask(),periods=periods())
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=tuple(frame().columns),train_mask=np.array([[True]]),periods=periods())
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=tuple(frame().columns),train_mask=np.array([False]*4),periods=periods())
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=tuple(frame().columns),train_mask=mask(),periods=pd.Series([2020,2021]))
+    with pytest.raises(FeatureValidationError): fit_state().fit(frame(),feature_names=tuple(frame().columns),train_mask=mask(),periods=pd.Series([2020,2021,2022.5,2023]))
+
+def test_preserve_standard_all_missing_rejected_without_warnings():
+    df=pd.DataFrame({'prep__a':[np.nan,np.nan,1.0]}); m=np.array([True,True,False]); per=pd.Series([2020,2021,2022])
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', RuntimeWarning)
+        with pytest.raises(FeatureValidationError): TrainOnlyPreprocessor(PreprocessingConfig('preserve','standard')).fit(df,feature_names=('prep__a',),train_mask=m,periods=per)

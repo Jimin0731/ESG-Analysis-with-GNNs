@@ -1,16 +1,41 @@
 from __future__ import annotations
-import pandas as pd
-from .contracts import FeatureBlock, FeatureProvenance, FeatureValidationError, sort_feature_frame
 
-def build_esg_feature_block(df, *, aggregation="mean", canonical_node_order=None):
-    if aggregation not in {"mean","median"}: raise FeatureValidationError("unsupported ESG aggregation policy")
-    pillars=[c for c in ["overall_esg_score","environmental_score","social_score","governance_score","observation_count"] if c in df]
-    if not pillars: raise FeatureValidationError("no observed ESG feature columns")
-    rows=int(len(df)); unmatched=sorted(df.loc[df["node_id"].isna()| (df["node_id"].astype(str).str.strip()==""),"entity_id"].astype(str).tolist()) if "entity_id" in df else []
-    d=df[df["node_id"].notna() & (df["node_id"].astype(str).str.strip()!="")].copy()
-    agg=d.groupby(["node_id","period"])[pillars].agg(aggregation).reset_index()
-    ren={c:f"esg__{c}" for c in pillars}; agg=agg.rename(columns=ren); names=tuple(ren.values())
-    counts=d.groupby(["node_id","period"]).size().reset_index(name="entities"); report={"source_entity_rows":rows,"resulting_node_period_rows":int(len(agg)),"entities_per_node_period":counts.to_dict("records"),"missing_pillar_counts":{c:int(d[c].isna().sum()) for c in pillars},"unmatched_node_ids":unmatched}
-    agg.attrs["aggregation_report"]=report; agg=sort_feature_frame(agg, canonical_node_order or sorted(agg.node_id.unique()))
-    prov=tuple(FeatureProvenance(n,"esg","normalized_esg_scores",n.replace('esg__',''),aggregation,"annual observation",False,(),"preserve") for n in names)
-    return FeatureBlock("esg",agg,names,prov)
+import pandas as pd
+
+from .contracts import FeatureBlock, FeatureProvenance, FeatureValidationError, sort_feature_frame, validate_metadata_jsonable, validate_node_id, validate_period_series
+
+PILLAR_COLUMNS = ("overall_esg_score", "environmental_score", "social_score", "governance_score", "observation_count")
+
+
+def build_esg_feature_block(df: pd.DataFrame, *, aggregation: str = "mean", canonical_node_order=None) -> FeatureBlock:
+    if aggregation not in {"mean", "median"}:
+        raise FeatureValidationError("unsupported ESG aggregation policy")
+    validate_period_series(df["period"])
+    pillars = [column for column in PILLAR_COLUMNS if column in df]
+    if not pillars:
+        raise FeatureValidationError("no observed ESG feature columns")
+    for column in pillars:
+        if not pd.api.types.is_numeric_dtype(df[column]):
+            raise FeatureValidationError(f"non-numeric ESG column {column}")
+    missing_nodes = df["node_id"].isna() | (df["node_id"].astype(str).str.strip() == "")
+    unmatched = sorted(df.loc[missing_nodes, "entity_id"].astype(str).tolist()) if "entity_id" in df else []
+    valid = df.loc[~missing_nodes].copy()
+    valid["node_id"].map(validate_node_id)
+    grouped = valid.groupby(["node_id", "period"], sort=True)
+    aggregated = grouped[pillars].agg(aggregation).reset_index()
+    renamed = {column: f"esg__{column}" for column in pillars}
+    aggregated = aggregated.rename(columns=renamed)
+    names = tuple(renamed.values())
+    counts = grouped.size().reset_index(name="entity_count")
+    report = {
+        "source_entity_rows": int(len(df)),
+        "resulting_node_period_rows": int(len(aggregated)),
+        "entity_counts_per_node_period": counts.to_dict("records"),
+        "missing_counts_by_pillar": {column: int(valid[column].isna().sum()) for column in pillars},
+        "unmatched_or_missing_node_ids": unmatched,
+        "aggregation_policy": aggregation,
+    }
+    validate_metadata_jsonable(report, field_name="ESG aggregation report")
+    aggregated = sort_feature_frame(aggregated, canonical_node_order or sorted(aggregated["node_id"].unique()))
+    provenance = tuple(FeatureProvenance(name, "esg", "normalized_esg_scores", name.removeprefix("esg__"), aggregation, "annual observation", False, (), "preserve") for name in names)
+    return FeatureBlock("esg", aggregated, names, provenance, report=report)
