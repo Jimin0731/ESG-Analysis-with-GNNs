@@ -199,9 +199,9 @@ The canonical implementation should be assembled from components rather than cop
 
 ### PR 7 — Heterophily and anomaly models
 
-- Add GPR-GNN from `Heterophily ver6.ipynb`.
-- Add EconomicGAE as a separate anomaly workflow.
-- Add ablations for propagation depth, alpha and graph direction.
+- **Implemented:** add GPR-GNN to the supervised registry.
+- **Implemented:** add EconomicGAE as a separate anomaly workflow.
+- **Implemented:** add configuration-only ablations for propagation depth, alpha and graph direction.
 
 ### PR 8 — Training, evaluation and experiment configs
 
@@ -247,3 +247,8 @@ Implemented explicit framework-neutral target construction, target assembly, and
 ### Migration PR 6 — baseline and directed model registry — Implemented
 
 Implemented the canonical baseline model registry for `mlp`, `gcn`, `gat`, `weighted_gat`, and `bidirectional_gnn`. All canonical baseline models use the same `ModelOutput` and configurable node task-head contract. Directed edges are never silently symmetrized: `edge_index[0]` is the source and `edge_index[1]` is the target. Weighted GAT uses explicit edge-level economic weights in attention normalization rather than a global node or embedding scale. Bidirectional modelling uses separately parameterized stored-direction and reversed-graph branches, with reversed edges built by `edge_index.flip(0)` and neutral auxiliary names for forward and reverse embeddings. GPR-GNN and EconomicGAE remain deferred to Migration PR 7, and training orchestration remains deferred to Migration PR 8.
+
+
+### Migration PR 7 — heterophily and anomaly models — Implemented
+
+GPR-GNN is now part of the supervised model registry. Graph direction is explicit (`stored` or `reverse`) and never silently symmetrized. Alpha, propagation-depth and direction ablations are deterministic configuration specifications only. EconomicGAE remains separate from supervised task models and reconstructs directed structure with asymmetric source and target projections. Its anomaly scores are reconstruction indicators rather than observed ground truth. Training, comparison, threshold selection and threshold evaluation remain deferred to PR 8.

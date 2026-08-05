@@ -7,9 +7,9 @@ def cfg(name="mlp", **kw):
     d.update(kw); return ModelConfig(**d)
 def graph(): return torch.randn(4,3), torch.tensor([[0,1,2,0],[1,2,0,3]]), torch.tensor([1.,2.,0.,3.])
 def test_registry_order_and_capabilities_json():
-    assert available_models()==("mlp","gcn","gat","weighted_gat","bidirectional_gnn")
+    assert available_models()==("mlp","gcn","gat","weighted_gat","bidirectional_gnn","gpr_gnn")
     for n in available_models(): json.dumps(get_model_capabilities(n).to_report())
-    with pytest.raises(ModelValidationError): get_model_capabilities("gpr_gnn")
+    with pytest.raises(ModelValidationError): get_model_capabilities("unknown")
 def test_config_validation():
     for bad in [dict(input_dim=0),dict(hidden_dim=True),dict(dropout=1.0),dict(target_names=("target__x","target__x")),dict(target_names=("x",))]:
         with pytest.raises(ModelValidationError): cfg(**bad)

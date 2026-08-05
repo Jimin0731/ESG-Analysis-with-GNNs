@@ -239,7 +239,7 @@ unnormalized_attention(edge, head) = exp(stabilized_attention_logit(edge, head))
 normalized_attention = unnormalized_attention / sum_incoming_unnormalized_attention_for_target_head
 ```
 
-The `bidirectional_gnn` uses separately parameterized stored-direction and `edge_index.flip(0)` reverse-direction branches, then combines `forward_embedding` and `reverse_embedding` by concatenation followed by projection.  Training comparison, orchestration, checkpointing, and experiment tracking remain deferred to Migration PR 8.  GPR-GNN and EconomicGAE remain deferred to Migration PR 7.  The legacy smoke wrapper remains available through `src.models.gnn_models.EconomicESGGNN` and still returns the historical dictionary keys used by `scripts/run_pipeline.py`.
+The `bidirectional_gnn` uses separately parameterized stored-direction and `edge_index.flip(0)` reverse-direction branches, then combines `forward_embedding` and `reverse_embedding` by concatenation followed by projection.  Training comparison, orchestration, checkpointing, and experiment tracking remain deferred to Migration PR 8.  The legacy smoke wrapper remains available through `src.models.gnn_models.EconomicESGGNN` and still returns the historical dictionary keys used by `scripts/run_pipeline.py`.
 
 ```python
 import torch
@@ -277,3 +277,10 @@ Registry helpers are exposed from `src.models`:
 ```python
 from src.models import available_models, build_model, get_model_capabilities
 ```
+
+
+## Migration PR 7 heterophily and anomaly models
+
+The supervised registry now appends `gpr_gnn`. For incoming weighted propagation `P`, its retained states satisfy `h_k = (1-alpha) P(h_(k-1)) + alpha h_0`, and the final embedding is `sum_k softmax(gamma)[k] h_k`. These learned propagation-step coefficients are **not attention**. `stored` follows supplied directed edges; `reverse` flips endpoints while preserving weight-column alignment. No mode silently symmetrizes the graph. `build_gpr_ablation_configs` produces the configuration-only alpha/depth/direction Cartesian grid in caller-supplied order; it neither trains models nor chooses a winner.
+
+`EconomicGAE` is a separate unsupervised workflow, not a supervised registry model. Its two-stage directed weighted encoder feeds a linear-ended feature decoder and an asymmetric structure decoder with separate source and target projections. Training loss is weighted feature MSE plus directed-edge binary cross entropy on explicitly supplied positives and negatives. Raw per-node scores are `feature_error + coefficient * embedding_consistency_error` (`0.5` by default). They are reconstruction indicators, not verified ground truth; no threshold or binary label is fitted. Training orchestration, comparison, and threshold evaluation remain deferred to Migration PR 8.
