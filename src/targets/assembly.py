@@ -15,6 +15,10 @@ class SupervisedTargetResult:
     leakage_audit_report: LeakageAuditReport|None
     safe_feature_names: tuple[str,...]
 
+def _ordered_key_dicts(keys):
+    return [{'node_id': str(n), 'period': int(p)} for n,p in sorted(keys, key=lambda x: (int(x[1]), str(x[0])))]
+
+
 def assemble_target_blocks(feature_keys: pd.DataFrame, blocks, *, strict=True) -> TargetPanel:
     if feature_keys.duplicated(['node_id','period']).any(): raise TargetValidationError('feature keys must be unique')
     canonical=feature_keys[['node_id','period']].copy().reset_index(drop=True)
@@ -25,8 +29,8 @@ def assemble_target_blocks(feature_keys: pd.DataFrame, blocks, *, strict=True) -
         if set(names).intersection(b.target_names): raise TargetValidationError('target-name collisions are not allowed')
         bkeys=set(map(tuple,b.frame[['node_id','period']].to_numpy()))
         label=','.join(b.target_names)
-        missing[label]=[{'node_id':n,'period':int(p)} for n,p in keyset-bkeys]
-        extra[label]=[{'node_id':n,'period':int(p)} for n,p in bkeys-keyset]
+        missing[label]=_ordered_key_dicts(keyset-bkeys)
+        extra[label]=_ordered_key_dicts(bkeys-keyset)
         if strict and (missing[label] or extra[label]): raise TargetValidationError('target keys do not align with feature keys')
         final=final.merge(b.frame[['node_id','period',*b.target_names]],on=['node_id','period'],how='left',validate='one_to_one')
         names.extend(b.target_names); prov.extend(b.provenance)
