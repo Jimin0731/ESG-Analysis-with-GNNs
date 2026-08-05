@@ -18,6 +18,8 @@ def to_tensors(dataset: GraphDataset, device: str | torch.device = "cpu"):
 
 
 def train_model(dataset: GraphDataset, epochs: int = 50, hidden_dim: int = 32, lr: float = 0.01, seed: int = 7, device: str = "cpu"):
+    if epochs <= 0:
+        raise ValueError("epochs must be a positive integer")
     torch.manual_seed(seed)
     x, edge_index, edge_weight, y = to_tensors(dataset, device)
     model = EconomicESGGNN(input_dim=x.shape[1], hidden_dim=hidden_dim).to(device)
