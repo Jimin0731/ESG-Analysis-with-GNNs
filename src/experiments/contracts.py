@@ -43,6 +43,13 @@ class SchedulerConfig:
         if isinstance(self.plateau_patience,bool) or not isinstance(self.plateau_patience,int) or self.plateau_patience<0: raise ExperimentValidationError("plateau_patience must be non-negative")
 
 @dataclass(frozen=True)
+class NegativeSamplingConfig:
+    negative_ratio:float=1.; exclude_self_loops:bool=True
+    def __post_init__(self):
+        _finite("negative_ratio",self.negative_ratio,positive=True)
+        if not isinstance(self.exclude_self_loops,bool): raise ExperimentValidationError("exclude_self_loops must be boolean")
+
+@dataclass(frozen=True)
 class EvaluationConfig: include_predictions:bool=True; include_timing:bool=False
 @dataclass(frozen=True)
 class CheckpointConfig: path:str|None=None
@@ -78,9 +85,9 @@ class MetricResult: target_name:str; mae:float; rmse:float; r2:float|None; obser
 class SplitEvaluation: split:str; metrics:tuple[MetricResult,...]; macro_mae:float; macro_rmse:float; macro_r2:float|None; predictions:tuple[dict[str,Any],...]
 @dataclass(frozen=True)
 class TrainingResult:
-    model_name:str; seed:int; requested_epochs:int; completed_epochs:int; best_epoch:int; stopped_early:bool; stop_reason:str; best_monitored_value:float; restored_best:bool; normalized_target_weights:dict[str,float]; history:tuple[EpochRecord,...]; evaluations:dict[str,SplitEvaluation]; best_state:dict[str,torch.Tensor]=field(repr=False,compare=False)
+    model_name:str; seed:int; requested_epochs:int; completed_epochs:int; best_epoch:int; stopped_early:bool; stop_reason:str; best_monitored_value:float; restored_best:bool; normalized_target_weights:dict[str,float]; history:tuple[EpochRecord,...]; evaluations:dict[str,SplitEvaluation]; best_state:dict[str,torch.Tensor]=field(repr=False,compare=False); final_state:dict[str,torch.Tensor]=field(repr=False,compare=False)
     def to_report(self):
-        d=asdict(self); d.pop("best_state"); return d
+        d=asdict(self); d.pop("best_state"); d.pop("final_state"); return d
 @dataclass(frozen=True)
 class BaselineResult: means:dict[str,float]; evaluations:dict[str,SplitEvaluation]
 @dataclass(frozen=True)
@@ -90,4 +97,4 @@ class ExperimentReport:
     experiment_name:str; seed:int; model_capabilities:dict[str,Any]; feature_names:tuple[str,...]; target_names:tuple[str,...]; split_periods:dict[str,tuple[int,...]]; preprocessing_fit_periods:tuple[int,...]; target_provenance:tuple[dict[str,Any],...]; leakage_audit:dict[str,Any]; training:dict[str,Any]; baseline:dict[str,Any]; software_versions:dict[str,str]
     def to_dict(self): return asdict(self)
 
-__all__=["ExperimentValidationError","TrainingConfig","EarlyStoppingConfig","SchedulerConfig","EvaluationConfig","CheckpointConfig","SupervisedSnapshot","PreparedSupervisedData","EpochRecord","MetricResult","SplitEvaluation","TrainingResult","BaselineResult","AnomalyTrainingResult","ExperimentReport"]
+__all__=["ExperimentValidationError","TrainingConfig","EarlyStoppingConfig","SchedulerConfig","NegativeSamplingConfig","EvaluationConfig","CheckpointConfig","SupervisedSnapshot","PreparedSupervisedData","EpochRecord","MetricResult","SplitEvaluation","TrainingResult","BaselineResult","AnomalyTrainingResult","ExperimentReport"]

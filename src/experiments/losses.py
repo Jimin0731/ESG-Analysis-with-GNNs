@@ -10,7 +10,8 @@ def masked_multi_target_mse(predictions,targets,mask,target_names,weights=None):
     losses={}; counts={}
     for i,n in enumerate(target_names):
         counts[n]=int(mask[:,i].sum())
-        if not counts[n]: raise ExperimentValidationError(f"target {n} has no observed labels")
-        losses[n]=((predictions[:,i][mask[:,i]]-targets[:,i][mask[:,i]])**2).mean()
-    return MaskedLossResult(sum(losses[n]*normalized[n] for n in target_names),losses,counts,normalized)
+        losses[n]=((predictions[:,i][mask[:,i]]-targets[:,i][mask[:,i]])**2).mean() if counts[n] else predictions[:,i].sum()*0
+    observed=[n for n in target_names if counts[n]]
+    if not observed: raise ExperimentValidationError("loss contains no observed labels")
+    return MaskedLossResult(sum(losses[n]*normalized[n] for n in observed),losses,counts,normalized)
 __all__=["MaskedLossResult","masked_multi_target_mse"]

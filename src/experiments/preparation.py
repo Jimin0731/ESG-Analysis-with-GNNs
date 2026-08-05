@@ -1,6 +1,6 @@
 import numpy as np,torch,pandas as pd
 from .contracts import ExperimentValidationError,PreparedSupervisedData,SupervisedSnapshot
-def prepare_supervised_data(feature_panel,target_panel,graph_snapshots_by_period,*,safe_feature_names,leakage_audit_report):
+def prepare_supervised_data(feature_panel,target_panel,graph_snapshots_by_period,*,safe_feature_names,leakage_audit_report,selected_target_names=None):
     names=tuple(safe_feature_names)
     if not names or len(names)!=len(set(names)): raise ExperimentValidationError("safe features must be non-empty and unique")
     if leakage_audit_report is None: raise ExperimentValidationError("leakage audit report is required")
@@ -13,6 +13,9 @@ def prepare_supervised_data(feature_panel,target_panel,graph_snapshots_by_period
     frame=pd.DataFrame(feature_panel.processed_features,columns=feature_panel.feature_names,index=pd.MultiIndex.from_tuples(keys,names=["node_id","period"]))
     graph_keys=tuple(graph_snapshots_by_period)
     if len(graph_keys)!=len(set(graph_keys)) or set(graph_keys)!=set(periods): raise ExperimentValidationError("graphs must contain exactly one snapshot per retained period")
+    selected=tuple(selected_target_names or ())
+    if not selected or len(selected)!=len(set(selected)) or any(not n.startswith("target__") for n in selected): raise ExperimentValidationError("selected target names must be non-empty, unique, and begin with target__")
+    if any(n not in target_panel.target_names for n in selected): raise ExperimentValidationError("selected target missing from target panel")
     targets=target_panel.frame.set_index(["node_id","period"]); features=frame
     if set(targets.index)!=set(features.index): raise ExperimentValidationError("feature and target keys must align exactly")
     split_periods={"train":set(),"validation":set(),"test":set()}
@@ -25,12 +28,12 @@ def prepare_supervised_data(feature_panel,target_panel,graph_snapshots_by_period
         split=next((s for s,p in split_periods.items() if period in p),None)
         if split is None: raise ExperimentValidationError("period has no chronological split")
         keys=[(n,period) for n in nodes]
-        try: x=features.loc[keys,list(names)].to_numpy(dtype=np.float32); y=targets.loc[keys,list(target_panel.target_names)].to_numpy(dtype=np.float32)
+        try: x=features.loc[keys,list(names)].to_numpy(dtype=np.float32); y=targets.loc[keys,list(selected)].to_numpy(dtype=np.float32)
         except KeyError as exc: raise ExperimentValidationError("feature and target keys must align exactly") from exc
         graph=graph_snapshots_by_period[period]
         if graph.period!=period or tuple(graph.node_ids)!=nodes: raise ExperimentValidationError("graph period/node order mismatch")
         mask=~np.isnan(y)
-        snap=SupervisedSnapshot(period,split,nodes,torch.tensor(x),torch.tensor(y),torch.tensor(mask),torch.tensor(graph.edge_index,dtype=torch.long),torch.tensor(graph.edge_weight,dtype=torch.float32),names,tuple(target_panel.target_names))
+        snap=SupervisedSnapshot(period,split,nodes,torch.tensor(x),torch.tensor(y),torch.tensor(mask),torch.tensor(graph.edge_index,dtype=torch.long),torch.tensor(graph.edge_weight,dtype=torch.float32),names,selected)
         out[split].append(snap)
-    return PreparedSupervisedData(*(tuple(out[x]) for x in ("train","validation","test")),names,tuple(target_panel.target_names))
+    return PreparedSupervisedData(*(tuple(out[x]) for x in ("train","validation","test")),names,selected)
 __all__=["prepare_supervised_data"]
