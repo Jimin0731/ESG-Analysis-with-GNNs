@@ -76,3 +76,19 @@ def test_selected_target_subset_is_canonical_and_ordered():
     baseline=TrainMeanBaseline().fit(prepared.train).evaluate(prepared)
     assert prepared.target_names==("target__two","target__one"); assert tuple(baseline.means)==prepared.target_names
     assert all(record["target_name"]!="target__unused" for evaluation in baseline.evaluations.values() for record in evaluation.predictions)
+
+def test_runner_reports_only_selected_target_provenance_in_order():
+    nodes=("a","b","c"); periods=(2018,2019,2020); keys=[(node,period) for period in periods for node in nodes]
+    feature_panel=SimpleNamespace(feature_names=("safe__a","safe__b"),processed_features=np.tile([[0.,1.],[1.,0.],[.5,.5]],(3,1)),assembly_report=SimpleNamespace(final_period_order=periods,final_node_order=nodes),preprocessing_state=SimpleNamespace(fit_periods=(2018,)),train_mask=np.array([True]*3+[False]*6),validation_mask=np.array([False]*3+[True]*3+[False]*3),test_mask=np.array([False]*6+[True]*3))
+    target_names=("target__one","target__two","target__unused"); frame=pd.DataFrame(keys,columns=("node_id","period"))
+    frame["target__one"]=[1.,2.,3.]*3; frame["target__two"]=[4.,5.,6.]*3; frame["target__unused"]=[100.,200.,300.]*3
+    panel=TargetPanel(frame,target_names,tuple(TargetProvenance(name,"observed","synthetic") for name in target_names))
+    graphs={period:GraphSnapshot(tuple(GraphNode(node,node) for node in nodes),np.array([[0,1],[1,2]]),np.array([.2,.4]),np.array([2.,4.]),"synthetic",period) for period in periods}
+    selected=("target__two","target__one")
+    config=ExperimentConfig("selected",7,("safe__a","safe__b"),selected,ModelConfig("mlp",2,4,1,0.,selected,seed=7),TrainingConfig(1,seed=7),EarlyStoppingConfig(enabled=False),SchedulerConfig(),CheckpointConfig(),EvaluationConfig())
+    report=run_supervised_experiment(config,feature_panel,panel,graphs,LeakageAuditReport(()))
+    assert report.target_names==selected
+    assert tuple(item["target_name"] for item in report.target_provenance)==selected
+    assert "target__unused" not in str(report.target_provenance)
+    assert "target__unused" not in str(report.training)
+    assert "target__unused" not in str(report.baseline)
