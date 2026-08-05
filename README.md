@@ -221,3 +221,59 @@ safe_features, removed, audit_report, reasons = audit_and_filter_features(
     policy="drop_declared_sources",
 )
 ```
+
+## Migration PR 6 model registry
+
+Migration PR 6 adds five canonical, pure-PyTorch model definitions behind a deterministic registry: `mlp`, `gcn`, `gat`, `weighted_gat`, and `bidirectional_gnn`.  All new registry models share the same forward interface:
+
+```python
+forward(x, edge_index=None, edge_weight=None, *, return_aux=False)
+```
+
+The graph convention is directed and source-to-target: `edge_index[0]` stores source nodes and `edge_index[1]` stores target nodes, so a message on `(source, target)` moves information from the source node to the target node.  Directed economic graphs are never silently symmetrized.  The feature matrix supplied to a model must already have passed the Migration PR 5 direct-lineage leakage policy; models do not construct targets or filter leakage internally.
+
+Every registry model returns a `ModelOutput` with two-dimensional `predictions`, ordered `target_names`, two-dimensional `node_embeddings`, and optional `auxiliary` tensors.  A shared `NodeRegressionHead` preserves the configured target order and ends in a linear layer with identity output transformation by default.  The `mlp` model is the required non-graph baseline for fair graph-model comparison.  The `gcn` model uses direction-preserving incoming-neighbor mean aggregation with a self path.  The unweighted `gat` computes destination-wise, per-head attention over stored directed edges only and ignores economic edge weights.  The `weighted_gat` uses the same attention logits but multiplies each edge's unnormalized attention by the explicit non-negative `edge_weight` before normalizing incoming mass for each destination and head:
+
+```text
+unnormalized_attention(edge, head) = exp(stabilized_attention_logit(edge, head)) * edge_weight(edge)
+normalized_attention = unnormalized_attention / sum_incoming_unnormalized_attention_for_target_head
+```
+
+The `bidirectional_gnn` uses separately parameterized stored-direction and `edge_index.flip(0)` reverse-direction branches, then combines `forward_embedding` and `reverse_embedding` by concatenation followed by projection.  Training comparison, orchestration, checkpointing, and experiment tracking remain deferred to Migration PR 8.  GPR-GNN and EconomicGAE remain deferred to Migration PR 7.  The legacy smoke wrapper remains available through `src.models.gnn_models.EconomicESGGNN` and still returns the historical dictionary keys used by `scripts/run_pipeline.py`.
+
+```python
+import torch
+from src.models import ModelConfig, build_model
+
+x = torch.randn(4, 8)
+edge_index = torch.tensor([[0, 1, 2], [1, 2, 3]])
+edge_weight = torch.tensor([1.0, 0.5, 2.0])
+
+config = ModelConfig(
+    name="weighted_gat",
+    input_dim=8,
+    hidden_dim=16,
+    num_layers=2,
+    dropout=0.1,
+    attention_heads=2,
+    target_names=(
+        "target__observed_esg_score",
+        "target__observed_real_output_growth",
+    ),
+    seed=7,
+)
+
+model = build_model(config)
+output = model(
+    x,
+    edge_index,
+    edge_weight,
+    return_aux=True,
+)
+```
+
+Registry helpers are exposed from `src.models`:
+
+```python
+from src.models import available_models, build_model, get_model_capabilities
+```
