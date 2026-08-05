@@ -1,8 +1,10 @@
 # ESG Analysis with GNNs
 
-A simplified scaffold for ESG analysis with graph neural networks. The repository
-is organized around data ingestion, model components, evaluation utilities,
-visualization helpers, scripts, notebooks, and generated outputs.
+This repository provides a lightweight project scaffold for experimenting with
+Environmental, Social, and Governance (ESG) analysis using graph neural networks.
+
+The repository is organized around data ingestion, model components, evaluation
+utilities, visualization helpers, scripts, notebooks, and generated outputs.
 
 ## Project structure
 
@@ -52,3 +54,6 @@ python scripts/inspect_bea_headers.py
 
 The modules use standard-library baselines where possible so the scaffold can be
 smoke-tested before full GNN dependencies and production ESG datasets are added.
+
+Binary outputs such as PNG figures and PDF reports should be generated locally
+and are not tracked in this scaffold.
