@@ -179,3 +179,17 @@ snapshot = build_economic_graph(
 Edges are directed from the source row entity to the destination column entity. Threshold configuration is explicit (`absolute` or `percentile`), and self-loops are included only when requested. Every `GraphSnapshot` keeps raw unmodified economic flows separately from model-ready `edge_weight`; configured model transforms include raw, `log1p`, row-normalized and globally standardized weights. Leontief computation uses an exact inverse when numerically appropriate and records any configured pseudo-inverse or regularized fallback in `LeontiefComputationReport`; a successful fallback is diagnostic only, not proof that the economic system is valid.
 
 Real datasets must remain local and untracked under `DATA_POLICY.md`. Do not commit licensed provider files, generated graph outputs, credentials, or binary fixtures.
+
+## Migration PR 4 feature-block research panel
+
+This repository now includes a framework-neutral feature layer under `src/features/` and chronological split utilities under `src/splits/`. Feature construction is organized as typed blocks for structural graph statistics, macroeconomic series, environmental observations, ESG score aggregation, and leakage-resistant temporal history. Blocks emit rows keyed only by `(node_id, period)` for integer annual periods and are assembled deterministically by period and canonical node order.
+
+Every feature carries `FeatureProvenance` metadata recording its final namespaced name, block, source dataset or graph backend, source statistic or column, transformation, period semantics, missing-value policy, units/notes, and whether preprocessing parameters were fitted. Assembly rejects feature-name collisions and duplicate keys rather than overwriting or multiplying rows.
+
+Chronological splitting never shuffles rows. It assigns all rows from a given annual period to exactly one train, validation, or test split using either explicit period boundaries or ratios over sorted unique periods. The train periods precede validation periods, which precede test periods.
+
+Train-only preprocessing is implemented by `TrainOnlyPreprocessor`. Missing-value policies are `error`, `preserve`, `train_mean`, `train_median`, and `constant`; scaling policies are `none` and `standard`. Imputation and scaling statistics are fitted only on the training mask, then reused unchanged for validation and test rows. The original missing-value mask is retained, zero-variance training features are recorded, and fitted state is JSON-serializable.
+
+A small synthetic configuration is available at `configs/features.example.yaml`. For example, it references invented CSV fixtures under `tests/fixtures/features/`, enables macro/environmental/ESG/temporal blocks, configures chronological ratios, and selects train-median imputation with standard scaling.
+
+The legacy `features_from_io_matrix()` helper in `src/data/preprocessing.py` remains for backward-compatible smoke tests and fits a scaler to one smoke matrix. It is not the train-only research preprocessing path. Migration PR 4 intentionally does not construct targets, labels, outcomes, or leakage-derived target proxies; target work is deferred to a later migration PR.

@@ -235,3 +235,7 @@ The canonical implementation should be assembled from components rather than cop
 
 
 - Migration PR 2 implemented typed data contracts, BEA/ESG loaders, and synthetic mapping coverage utilities without adding real datasets.
+
+### Migration PR 4 — implemented
+
+Implemented typed, framework-neutral feature blocks, deterministic feature assembly, chronological train/validation/test splitting, and train-only preprocessing. Design decisions are intentionally narrow: feature rows are keyed by `(node_id, period)` with integer annual periods; feature names are namespaced; provenance/report objects are JSON-serializable; temporal features use only prior periods by default; preprocessing state stores deterministic statistics instead of serialized estimator objects. This PR does not implement targets or claim that target leakage is fully resolved; target construction remains Migration PR 5 work.

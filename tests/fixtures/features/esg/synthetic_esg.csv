@@ -1,0 +1,5 @@
+entity_id,node_id,period,overall_esg_score,environmental_score,social_score,governance_score,observation_count
+E1,A,2020,60,55,65,60,1
+E2,A,2020,70,65,75,70,1
+E3,B,2020,50,45,,55,1
+E4,,2020,99,99,99,99,1
