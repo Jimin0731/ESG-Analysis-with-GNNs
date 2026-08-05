@@ -252,3 +252,7 @@ Implemented the canonical baseline model registry for `mlp`, `gcn`, `gat`, `weig
 ### Migration PR 7 — heterophily and anomaly models — Implemented
 
 GPR-GNN is now part of the supervised model registry. Graph direction is explicit (`stored` or `reverse`) and never silently symmetrized. Alpha, propagation-depth and direction ablations are deterministic configuration specifications only. EconomicGAE remains separate from supervised task models and reconstructs directed structure with asymmetric source and target projections. Its anomaly scores are reconstruction indicators rather than observed ground truth. Training, comparison, threshold selection and threshold evaluation remain deferred to PR 8.
+
+### Migration PR 8 — seeded training and chronological evaluation — Implemented
+
+Training now occurs by chronological annual graph snapshot. Train snapshots alone update parameters; early stopping and scheduler decisions use validation loss only, and the best detached in-memory checkpoint is restored before final test evaluation. Missing targets are masked rather than imputed, with normalized target-aware loss weights. Train-mean and registry MLP baselines are available. EconomicGAE remains a separate unsupervised workflow with optional validation-only quantile calibration. Experiment reports are deterministic and JSON-serializable. This does not yet claim complete real-data reproducibility; interpretability and visualization remain deferred to PR 9.

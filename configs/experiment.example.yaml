@@ -1,0 +1,15 @@
+name: synthetic_chronological_example
+seed: 17
+safe_feature_names: [synthetic__level, synthetic__change]
+selected_target_names: [target__score, target__risk]
+model: {name: mlp, input_dim: 2, hidden_dim: 4, num_layers: 1, dropout: 0.0, target_names: [target__score, target__risk]}
+training: {epochs: 4, learning_rate: 0.01, weight_decay: 0.0, optimizer: adamw, device: cpu}
+early_stopping: {enabled: true, patience: 2, minimum_delta: 0.0, monitor: validation_loss, restore_best: true}
+scheduler: {name: cosine, cosine_min_lr: 0.0}
+checkpoint: {path: null}
+evaluation: {include_predictions: true, include_timing: false}
+train_mean_baseline: true
+economic_gae: {enabled: false}
+negative_sampling: {exclude_self_loops: true}
+anomaly_threshold: {policy: none}
+runtime_output_directory: null
