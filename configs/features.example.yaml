@@ -1,0 +1,25 @@
+canonical_node_order: [A, B, C]
+feature_blocks:
+  macro:
+    path: tests/fixtures/features/macro/synthetic_macro.csv
+    metrics:
+      real_output: [level, change, pct_change, log1p]
+  environmental:
+    path: tests/fixtures/features/environmental/synthetic_environmental.csv
+    levels: [emissions, environmental_taxes, energy_use]
+    intensities:
+      emissions_intensity: {numerator: emissions, denominator: output}
+  esg:
+    path: tests/fixtures/features/esg/synthetic_esg.csv
+    aggregation: mean
+  temporal:
+    source_features: [macro__real_output_level]
+    lags: [1, 2]
+    rolling_windows: [3]
+    min_history: 2
+    include_current: false
+split:
+  ratios: [0.6, 0.2, 0.2]
+preprocessing:
+  missing_policy: train_median
+  scaling_policy: standard
