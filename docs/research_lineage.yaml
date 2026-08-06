@@ -1,0 +1,370 @@
+schema_version: 1
+components:
+- component_id: data contracts and configuration
+  current_paths:
+  - src/data/contracts.py
+  - src/data/config.py
+  primary_archived_sources:
+  - archive/research/us_icio_bea/Data Preprocess.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 1
+  - 2
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: BEA loading
+  current_paths:
+  - src/data/bea.py
+  primary_archived_sources:
+  - archive/research/us_icio_bea/header file check.ipynb
+  secondary_archived_sources:
+  - archive/research/us_icio_bea/Data Preprocess.ipynb
+  migration_prs:
+  - 2
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: ESG loading
+  current_paths:
+  - src/data/esg.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Real GDP data + real env data ver3.ipynb
+  migration_prs:
+  - 2
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: USE/MAKE graph backend
+  current_paths:
+  - src/graphs/use_make.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Epoch 300 + IO data ver2.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 3
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: OECD/ICIO graph backend
+  current_paths:
+  - src/graphs/icio.py
+  primary_archived_sources:
+  - archive/research/us_icio_bea/Data Preprocess.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 3
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: industry mapping
+  current_paths:
+  - src/data/mapping.py
+  primary_archived_sources:
+  - archive/research/us_icio_bea/Data Preprocess.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/top 4 update ver.ipynb
+  migration_prs:
+  - 2
+  - 10
+  status: reference only
+  intentional_behavior_changes:
+  - The early broken Korean-mapping notebook is reference only; canonical mapping
+    was independently implemented.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: feature blocks
+  current_paths:
+  - src/features
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Real GDP data + real env data ver3.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 4
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: train-only preprocessing
+  current_paths:
+  - src/features/preprocessing.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/time series ver9.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Real GDP data + real env data ver3.ipynb
+  migration_prs:
+  - 4
+  - 8
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: chronological splitting
+  current_paths:
+  - src/splits/chronological.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/time series ver9.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 5
+  - 8
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: target construction
+  current_paths:
+  - src/targets
+  primary_archived_sources:
+  - archive/research/us_icio_bea/differentiation top 10.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Real GDP data + real env data ver3.ipynb
+  - archive/research/integrated_use_make/top 4 update ver.ipynb
+  migration_prs:
+  - 5
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: leakage auditing
+  current_paths:
+  - src/targets/leakage.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/time series ver9.ipynb
+  migration_prs:
+  - 5
+  - 8
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: model registry and baselines
+  current_paths:
+  - src/models/registry.py
+  - src/experiments/baselines.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Epoch 300 + IO data ver2.ipynb
+  migration_prs:
+  - 6
+  - 8
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: bidirectional model
+  current_paths:
+  - src/models/directed.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Epoch 300 + IO data ver2.ipynb
+  migration_prs:
+  - 6
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: GPR-GNN
+  current_paths:
+  - src/models/gpr.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Heterophily ver6.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 7
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Propagation coefficients are explicitly not labeled attention.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: EconomicGAE
+  current_paths:
+  - src/anomaly/economic_gae.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Heterophily ver6.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 7
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Canonical anomaly scoring is reconstruction based.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: supervised experiments
+  current_paths:
+  - src/experiments/supervised.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/time series ver9.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Epoch 300 + IO data ver2.ipynb
+  migration_prs:
+  - 8
+  - 9
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Validation-only stopping and in-memory checkpoints replace notebook state.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: anomaly experiments
+  current_paths:
+  - src/experiments/anomaly.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Heterophily ver6.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 7
+  - 8
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: attention extraction
+  current_paths:
+  - src/evaluation/attention_explanations.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Attention weight + visualization ver8.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Attention_weight_visualization_FULL.py
+  migration_prs:
+  - 9
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Directed incoming-target normalization is explicit; malformed attention export
+    is archived reference only.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: perturbation and ablation
+  current_paths:
+  - src/evaluation/perturbation.py
+  - src/evaluation/shock.py
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Attention weight + visualization ver8.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/ESG Analysis final ver.ipynb
+  migration_prs:
+  - 9
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Outputs use non-causal local-sensitivity language.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: visualization and exports
+  current_paths:
+  - src/visualization
+  primary_archived_sources:
+  - archive/research/integrated_use_make/Attention weight + visualization ver8.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/Attention_weight_visualization_FULL.py
+  migration_prs:
+  - 9
+  - 10
+  status: partially migrated
+  intentional_behavior_changes:
+  - Malformed attention export is archived reference only and is never executed.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: news-database export utility
+  current_paths:
+  - scripts/export_news_db.py
+  primary_archived_sources:
+  - archive/research/auxiliary/db_to_csv.ipynb
+  secondary_archived_sources:
+  - archive/research/integrated_use_make/API added ver5.ipynb
+  migration_prs:
+  - 1
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - No embedded credential or network request.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: BEA-header inspection utility
+  current_paths:
+  - scripts/inspect_bea_headers.py
+  primary_archived_sources:
+  - archive/research/us_icio_bea/header file check.ipynb
+  secondary_archived_sources:
+  - archive/research/us_icio_bea/Data Preprocess.ipynb
+  migration_prs:
+  - 2
+  - 10
+  status: migrated
+  intentional_behavior_changes:
+  - Typed deterministic implementation replaces notebook coupling.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: unrelated GraphSAGE PPI reference
+  current_paths: []
+  primary_archived_sources:
+  - archive/research/auxiliary/graphsage_ppi.py
+  secondary_archived_sources: []
+  migration_prs:
+  - 10
+  status: reference only
+  intentional_behavior_changes:
+  - graphsage_ppi.py is unrelated reference-only material and has no active replacement.
+  remaining_caveats:
+  - Scientific equivalence has not been established.
+- component_id: external news API retrieval
+  current_paths: []
+  primary_archived_sources:
+  - archive/research/integrated_use_make/API added ver5.ipynb
+  secondary_archived_sources: []
+  migration_prs:
+  - 1
+  - 10
+  status: intentionally excluded
+  intentional_behavior_changes:
+  - Active workflows do not perform external API calls or embed credentials.
+  remaining_caveats:
+  - The previously exposed credential still requires manual revocation or rotation.

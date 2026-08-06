@@ -260,3 +260,9 @@ GPR-GNN is now part of the supervised model registry. Graph direction is explici
 ### Migration PR 8 — seeded training and chronological evaluation — Implemented
 
 Training now occurs by chronological annual graph snapshot. Train snapshots alone update parameters; early stopping and scheduler decisions use validation loss only, and the best detached in-memory checkpoint is restored before final test evaluation. Missing targets are masked rather than imputed, with normalized target-aware loss weights. Train-mean and registry MLP baselines are available. EconomicGAE remains a separate unsupervised workflow with optional validation-only quantile calibration. Experiment reports are deterministic and JSON-serializable. This does not yet claim complete real-data reproducibility; interpretability and visualization remain deferred to PR 9.
+
+## Migration PR 10 — implemented
+
+All 14 historical research artifacts are byte-preserved under `archive/research/`. The five active notebooks are thin deterministic synthetic examples using canonical `src/` APIs. Module lineage, sources, intentional changes, and remaining caveats are documented; archived artifacts are neither imported nor executed, and fresh-kernel notebook execution is validated in CI. The planned ten-PR software migration is complete.
+
+The old credential still requires manual revocation or rotation. Real-data scientific reproduction remains incomplete, and real-world claims require independent validation.
