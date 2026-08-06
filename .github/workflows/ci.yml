@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Compile Python files
-        run: python -m compileall src scripts tests
+        run: python -m compileall src scripts examples tests
       - name: Run tests
         run: python -m pytest tests
       - name: Run security inventory check
@@ -27,3 +27,5 @@ jobs:
         run: python scripts/run_experiment_smoke.py
       - name: Run interpretability smoke
         run: python scripts/run_interpretability_smoke.py
+      - name: Run active notebook smoke
+        run: python scripts/run_notebook_smoke.py
