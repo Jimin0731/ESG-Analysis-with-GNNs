@@ -10,7 +10,7 @@ Do not commit private, licensed, or generated research artifacts to this reposit
 - API response caches and downloaded news payloads.
 - SQLite databases, including local news-monitoring databases.
 - Trained model weights, checkpoints, and serialized experiments.
-- Generated metrics, reports, plots, figures, and run outputs, except deliberately selected documentation assets reviewed for publication.
+- Generated metrics, reports, plots, figures, and run outputs, except deliberately selected documentation assets and compact synthetic summaries reviewed for publication under `assets/` and `results/`.
 
 ## Intended local directories
 
@@ -19,5 +19,7 @@ Do not commit private, licensed, or generated research artifacts to this reposit
 - `data/local/` — local databases or sensitive working files.
 - `models/` — trained model weights and checkpoints.
 - `runs/` — experiment logs, generated metrics, figures, and reports.
+
+The committed `results/summary_metrics.{csv,json}` and corresponding README SVG are a narrow exception: they are reproducible deterministic synthetic smoke evidence, clearly labelled as such, and checked in CI. Real research outputs remain local.
 
 Keep credentials in an untracked `.env` file or a local secret manager. Users must rotate any exposed credential; deleting it from the current tree does not remove it from git history. Any history rewrite with `git filter-repo` or BFG must be coordinated separately because it changes commit hashes.

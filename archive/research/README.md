@@ -2,6 +2,8 @@
 
 These files are historical research artifacts preserved byte-for-byte for provenance and comparison. They are **not canonical executable entry points**. Several contain broken, incomplete, duplicated, or environment-specific code; they may retain old local paths, notebook output, and unsafe import-time behavior. **Do not import or automatically execute them.** Active reusable code lives under `src/`; active reproducible synthetic examples live under `notebooks/`.
 
+The historical `presentation/final_presentation.pdf` is stored here as provenance rather than in a competing root-level reports surface. Its inclusion does not validate or reproduce any historical claim.
+
 The previously exposed NewsAPI credential must still be manually revoked or rotated. No value is reproduced here. Moving files does not erase Git history, and archived results are not independently reproduced scientific results.
 
 | Archived path | Research branch | Historical role | Current replacement | Status | Important caveat |

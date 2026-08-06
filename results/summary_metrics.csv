@@ -1,0 +1,25 @@
+scope,model,family,uses_graph,split,metric,value,selection_role,seed,epochs
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,validation,macro_mae,0.994556780,workflow comparison,17,2
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,validation,macro_rmse,1.016017340,workflow comparison,17,2
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,validation,macro_r2,-22.998189244,workflow comparison,17,2
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,test,macro_mae,0.857153222,descriptive only,17,2
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,test,macro_rmse,0.891095075,descriptive only,17,2
+deterministic_synthetic_smoke,mlp,non-graph neural baseline,false,test,macro_r2,-14.738431330,descriptive only,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,validation,macro_mae,0.911153626,workflow comparison,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,validation,macro_rmse,0.937391104,workflow comparison,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,validation,macro_r2,-18.634004728,workflow comparison,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,test,macro_mae,0.773750068,descriptive only,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,test,macro_rmse,0.824051039,descriptive only,17,2
+deterministic_synthetic_smoke,weighted_gat,directed weighted graph model,true,test,macro_r2,-14.106328665,descriptive only,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,validation,macro_mae,1.191951687,workflow comparison,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,validation,macro_rmse,1.209947593,workflow comparison,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,validation,macro_r2,-33.565560497,workflow comparison,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,test,macro_mae,1.054548129,descriptive only,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,test,macro_rmse,1.080863779,descriptive only,17,2
+deterministic_synthetic_smoke,gpr_gnn,directed graph propagation model,true,test,macro_r2,-21.544163878,descriptive only,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,validation,macro_mae,0.221988718,workflow comparison,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,validation,macro_rmse,0.286057068,workflow comparison,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,validation,macro_r2,-0.828003298,workflow comparison,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,test,macro_mae,0.370616307,descriptive only,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,test,macro_rmse,0.436719929,descriptive only,17,2
+deterministic_synthetic_smoke,train_mean,non-neural train-mean baseline,false,test,macro_r2,-2.740703095,descriptive only,17,2

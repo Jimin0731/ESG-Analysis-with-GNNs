@@ -21,8 +21,10 @@ jobs:
         run: python -m pytest tests
       - name: Run security inventory check
         run: python scripts/security_inventory_check.py
+      - name: Verify portfolio assets and result synchronization
+        run: python scripts/update_readme_results.py --check
       - name: Run smoke pipeline
-        run: python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8
+        run: python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8 --metrics-output /tmp/pipeline_smoke_metrics.json
       - name: Run chronological experiment smoke
         run: python scripts/run_experiment_smoke.py
       - name: Run interpretability smoke

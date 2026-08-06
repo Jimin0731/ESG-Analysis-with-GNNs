@@ -17,7 +17,7 @@
 | 9 | corrected training reconstruction and non-causal interpretability |
 | 10 | byte-preserved archive, thin notebooks, and lineage documentation |
 
-Canonical executable entry points are `src/` public APIs and `scripts/run_pipeline.py`, `scripts/run_experiment_smoke.py`, and `scripts/run_interpretability_smoke.py`. Active synthetic notebooks are under `notebooks/`; historical artifacts are under `archive/research/` and must not be imported or executed. Unit, security-inventory, legacy, chronological, interpretability, checksum, lineage, static notebook, and fresh-kernel notebook smoke checks define current software coverage.
+Canonical executable entry points are `src/` public APIs and `scripts/run_pipeline.py`, `scripts/run_experiment_smoke.py`, and `scripts/run_interpretability_smoke.py`. The single-snapshot pipeline now uses the same canonical model registry as chronological experiments; obsolete duplicate sample modules have been removed. Active synthetic notebooks are under `notebooks/`; historical artifacts are under `archive/research/` and must not be imported or executed. Unit, security-inventory, chronological, interpretability, checksum, lineage, portfolio-surface, static notebook, and fresh-kernel notebook smoke checks define current software coverage.
 
 Security controls include no active embedded credential, configuration-driven external paths, current-tree and history secret scans, and a narrowly scoped non-reversible fingerprint allowance. Moving files has not purged Git history.
 

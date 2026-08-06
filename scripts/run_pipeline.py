@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-"""Run the extracted ESG GNN pipeline.
+"""Run the canonical weighted-GAT single-snapshot ESG pipeline.
 
-Use ``--smoke-test`` to run without external datasets, credentials, or PyG.
+Use ``--smoke-test`` to run without external datasets or credentials. This
+entry point is a practical file-ingestion harness, not chronological research
+validation; use :mod:`src.experiments` for split-aware experiments.
 """
 from __future__ import annotations
 
@@ -21,7 +23,7 @@ from src.training import evaluate_model, train_model
 
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--smoke-test", action="store_true", help="run on deterministic built-in sample data")
     p.add_argument("--io-matrix", type=Path, help="CSV/XLSX industry I/O matrix")
     p.add_argument("--esg-data", type=Path, help="CSV with ESG scores or E/S/G pillar columns")
@@ -37,6 +39,8 @@ def main() -> None:
         raise SystemExit("--epochs must be a positive integer")
     if args.hidden_dim <= 0:
         raise SystemExit("--hidden-dim must be a positive integer")
+    if args.hidden_dim % 2:
+        raise SystemExit("--hidden-dim must be divisible by 2 for the weighted-GAT attention heads")
     if args.smoke_test:
         dataset = make_smoke_dataset()
     else:
@@ -49,7 +53,7 @@ def main() -> None:
     metrics = evaluate_model(model, dataset)
     args.metrics_output.parent.mkdir(parents=True, exist_ok=True)
     args.metrics_output.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"nodes={len(dataset.node_labels)} edges={dataset.edge_index.shape[1]} final_loss={history[-1]:.4f}")
+    print(f"model=weighted_gat nodes={len(dataset.node_labels)} edges={dataset.edge_index.shape[1]} final_loss={history[-1]:.4f}")
     print("metrics=" + ", ".join(f"{k}={v:.4f}" for k, v in metrics.items()))
     print(f"metrics_output={args.metrics_output}")
 
