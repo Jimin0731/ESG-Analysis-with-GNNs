@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Deterministic synthetic validation RMSE by model</title>
+  <desc id="desc">Train mean has RMSE 0.286, weighted GAT 0.937, MLP 1.016, and GPR GNN 1.210. Lower is better. These are smoke results, not scientific findings.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1630"/><stop offset="1" stop-color="#14294a"/></linearGradient>
+    <style>.title{font:700 28px system-ui,sans-serif;fill:#f5f8ff}.sub{font:15px system-ui,sans-serif;fill:#a9bad5}.label{font:600 16px ui-monospace,monospace;fill:#e7eefb}.value{font:700 16px system-ui,sans-serif;fill:#f5f8ff}.tick{font:13px system-ui,sans-serif;fill:#96a9c7}.grid{stroke:#527099;stroke-width:1;opacity:.32}.note{font:14px system-ui,sans-serif;fill:#f5d982}.legend{font:13px system-ui,sans-serif;fill:#becbe0}</style>
+  </defs>
+  <rect width="960" height="540" rx="24" fill="url(#bg)"/>
+  <text x="56" y="62" class="title">Synthetic smoke comparison</text>
+  <text x="56" y="91" class="sub">Validation macro RMSE · fixed seed 17 · 2 epochs · lower is better</text>
+  <line x1="245.0" y1="145" x2="245.0" y2="440" class="grid"/><text x="245.0" y="463" text-anchor="middle" class="tick">0.00</text><line x1="356.5" y1="145" x2="356.5" y2="440" class="grid"/><text x="356.5" y="463" text-anchor="middle" class="tick">0.25</text><line x1="468.1" y1="145" x2="468.1" y2="440" class="grid"/><text x="468.1" y="463" text-anchor="middle" class="tick">0.50</text><line x1="579.6" y1="145" x2="579.6" y2="440" class="grid"/><text x="579.6" y="463" text-anchor="middle" class="tick">0.75</text><line x1="691.2" y1="145" x2="691.2" y2="440" class="grid"/><text x="691.2" y="463" text-anchor="middle" class="tick">1.00</text><line x1="802.7" y1="145" x2="802.7" y2="440" class="grid"/><text x="802.7" y="463" text-anchor="middle" class="tick">1.25</text>
+  <text x="220" y="187" text-anchor="end" class="label">mlp</text><rect x="245" y="165" width="453.3" height="34" rx="7" fill="#73839c"/><text x="710.3" y="188" class="value">1.016</text><text x="220" y="257" text-anchor="end" class="label">weighted_gat</text><rect x="245" y="235" width="418.2" height="34" rx="7" fill="#25b7a4"/><text x="675.2" y="258" class="value">0.937</text><text x="220" y="327" text-anchor="end" class="label">gpr_gnn</text><rect x="245" y="305" width="539.8" height="34" rx="7" fill="#25b7a4"/><text x="796.8" y="328" class="value">1.210</text><text x="220" y="397" text-anchor="end" class="label">train_mean</text><rect x="245" y="375" width="127.6" height="34" rx="7" fill="#73839c"/><text x="384.6" y="398" class="value">0.286</text>
+  <rect x="56" y="488" width="14" height="14" rx="3" fill="#25b7a4"/><text x="78" y="500" class="legend">graph model</text>
+  <rect x="188" y="488" width="14" height="14" rx="3" fill="#73839c"/><text x="210" y="500" class="legend">baseline</text>
+  <text x="914" y="500" text-anchor="end" class="note">Deterministic synthetic fixture—not scientific validation</text>
+</svg>

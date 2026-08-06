@@ -114,12 +114,14 @@ def graph_from_io_matrix(io_matrix: pd.DataFrame | np.ndarray, percentile: float
         raise ValueError("I/O matrix must contain positive flows")
     threshold = np.percentile(positive, percentile)
     sources, targets = np.where(matrix > threshold)
-    weights = np.log(matrix[sources, targets] + 1e-9)
-    if weights.size <= 1:
-        weights = np.zeros_like(weights, dtype=float)
-    else:
-        std = float(weights.std())
-        weights = np.zeros_like(weights, dtype=float) if std == 0.0 else (weights - weights.mean()) / (std + 1e-9)
+    # Canonical weighted graph models require non-negative economic weights.
+    # Log scaling compresses large flows; max scaling preserves ordering and
+    # direction without introducing the negative values created by z-scores.
+    weights = np.log1p(matrix[sources, targets])
+    if weights.size == 0:
+        raise ValueError("percentile threshold retained no directed edges")
+    maximum = float(weights.max())
+    weights = weights / maximum if maximum > 0.0 else np.ones_like(weights, dtype=float)
     return np.vstack([sources, targets]).astype(np.int64), weights.astype(np.float32)
 
 
@@ -175,12 +177,12 @@ def build_graph_dataset(io_matrix: pd.DataFrame | np.ndarray, targets: np.ndarra
     validate_square_matrix(io_matrix)
     labels = list(io_matrix.index.astype(str)) if isinstance(io_matrix, pd.DataFrame) else [str(i) for i in range(np.asarray(io_matrix).shape[0])]
     features = features_from_io_matrix(io_matrix)
-    edge_index, edge_weight = graph_from_io_matrix(io_matrix)
     if targets is None:
         targets = features[:, 0] * 10 + 70
     targets = np.asarray(targets, dtype=np.float32)
     if targets.shape != (features.shape[0],):
         raise ValueError("targets must be a one-dimensional array matching the number of graph nodes")
+    edge_index, edge_weight = graph_from_io_matrix(io_matrix)
     return GraphDataset(features, edge_index, edge_weight, targets, labels, years_used or [])
 
 

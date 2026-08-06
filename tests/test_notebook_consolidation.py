@@ -17,6 +17,7 @@ ROOT=Path(__file__).resolve().parents[1]
 ARCHIVE=ROOT/'archive/research'
 ARCHIVED={
 'integrated_use_make/top 4 update ver.ipynb','integrated_use_make/Epoch 300 + IO data ver2.ipynb','integrated_use_make/Real GDP data + real env data ver3.ipynb','integrated_use_make/API added ver5.ipynb','integrated_use_make/Heterophily ver6.ipynb','integrated_use_make/Attention weight + visualization ver8.ipynb','integrated_use_make/Attention_weight_visualization_FULL.py','integrated_use_make/time series ver9.ipynb','integrated_use_make/ESG Analysis final ver.ipynb','us_icio_bea/Data Preprocess.ipynb','us_icio_bea/header file check.ipynb','us_icio_bea/differentiation top 10.ipynb','auxiliary/db_to_csv.ipynb','auxiliary/graphsage_ppi.py'}
+ARCHIVE_ARTIFACTS=ARCHIVED|{'presentation/final_presentation.pdf'}
 
 def manifest():
  rows=[]
@@ -26,13 +27,14 @@ def manifest():
 
 def test_exact_archive_inventory_and_root_cleanup():
  actual={str(p.relative_to(ARCHIVE)) for p in ARCHIVE.rglob('*') if p.is_file() and p.name not in {'README.md','SHA256SUMS'}}
- assert actual==ARCHIVED
+ assert actual==ARCHIVE_ARTIFACTS
  assert not list(ROOT.glob('*.ipynb'))
+ assert not (ROOT/'reports').exists()
  assert all(not (ROOT/Path(p).name).exists() for p in ARCHIVED)
 
 def test_checksum_manifest_is_complete_safe_unique_and_byte_exact():
- rows=manifest(); assert len(rows)==len(set(rows))==14
- assert {p for _,p in rows}==ARCHIVED
+ rows=manifest(); assert len(rows)==len(set(rows))==15
+ assert {p for _,p in rows}==ARCHIVE_ARTIFACTS
  root=ARCHIVE.resolve()
  for expected,relative in rows:
   path=(ARCHIVE/relative).resolve()

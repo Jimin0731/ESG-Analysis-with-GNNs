@@ -1,0 +1,210 @@
+{
+  "models": [
+    {
+      "family": "non-graph neural baseline",
+      "metrics": {
+        "test": {
+          "macro_mae": 0.8571532219648361,
+          "macro_r2": -14.738431329600157,
+          "macro_rmse": 0.8910950750097182,
+          "targets": {
+            "target__environment": {
+              "mae": 1.2276370426019032,
+              "observed_count": 3,
+              "r2": -24.000159259041084,
+              "rmse": 1.252951643595355
+            },
+            "target__social": {
+              "mae": 0.486669401327769,
+              "observed_count": 3,
+              "r2": -5.476703400159232,
+              "rmse": 0.5292385064240813
+            }
+          }
+        },
+        "validation": {
+          "macro_mae": 0.994556779662768,
+          "macro_r2": -22.998189244090455,
+          "macro_rmse": 1.0160173400893218,
+          "targets": {
+            "target__environment": {
+              "mae": 1.1795906921227772,
+              "observed_count": 3,
+              "r2": -22.631514867515868,
+              "rmse": 1.2053697985872014
+            },
+            "target__social": {
+              "mae": 0.8095228672027588,
+              "observed_count": 3,
+              "r2": -23.364863620665044,
+              "rmse": 0.8266648815914419
+            }
+          }
+        }
+      },
+      "model": "mlp",
+      "uses_graph": false
+    },
+    {
+      "family": "directed weighted graph model",
+      "metrics": {
+        "test": {
+          "macro_mae": 0.7737500679989655,
+          "macro_r2": -14.106328665350096,
+          "macro_rmse": 0.8240510388451943,
+          "targets": {
+            "target__environment": {
+              "mae": 1.2957687576611836,
+              "observed_count": 3,
+              "r2": -26.70982613460901,
+              "rmse": 1.3191063862873538
+            },
+            "target__social": {
+              "mae": 0.25173137833674747,
+              "observed_count": 3,
+              "r2": -1.5028311960911824,
+              "rmse": 0.32899569140303486
+            }
+          }
+        },
+        "validation": {
+          "macro_mae": 0.9111536256968975,
+          "macro_r2": -18.634004728245362,
+          "macro_rmse": 0.9373911037898339,
+          "targets": {
+            "target__environment": {
+              "mae": 1.2477224071820576,
+              "observed_count": 3,
+              "r2": -25.398083424756816,
+              "rmse": 1.2739744642197168
+            },
+            "target__social": {
+              "mae": 0.5745848442117373,
+              "observed_count": 3,
+              "r2": -11.86992603173391,
+              "rmse": 0.6008077433599511
+            }
+          }
+        }
+      },
+      "model": "weighted_gat",
+      "uses_graph": true
+    },
+    {
+      "family": "directed graph propagation model",
+      "metrics": {
+        "test": {
+          "macro_mae": 1.054548129439354,
+          "macro_r2": -21.544163877980683,
+          "macro_rmse": 1.0808637785930075,
+          "targets": {
+            "target__environment": {
+              "mae": 1.4198001225789387,
+              "observed_count": 3,
+              "r2": -32.10174004870349,
+              "rmse": 1.4417446032134553
+            },
+            "target__social": {
+              "mae": 0.689296136299769,
+              "observed_count": 3,
+              "r2": -10.986587707257875,
+              "rmse": 0.7199829539725597
+            }
+          }
+        },
+        "validation": {
+          "macro_mae": 1.1919516871372857,
+          "macro_r2": -33.56556049708064,
+          "macro_rmse": 1.2099475925814756,
+          "targets": {
+            "target__environment": {
+              "mae": 1.3717537720998128,
+              "observed_count": 3,
+              "r2": -30.60576767276261,
+              "rmse": 1.393983702083178
+            },
+            "target__social": {
+              "mae": 1.012149602174759,
+              "observed_count": 3,
+              "r2": -36.52535332139866,
+              "rmse": 1.0259114830797733
+            }
+          }
+        }
+      },
+      "model": "gpr_gnn",
+      "uses_graph": true
+    },
+    {
+      "family": "non-neural train-mean baseline",
+      "metrics": {
+        "test": {
+          "macro_mae": 0.37061630686124164,
+          "macro_r2": -2.7407030949557254,
+          "macro_rmse": 0.43671992902946116,
+          "targets": {
+            "target__environment": {
+              "mae": 0.35126354297002155,
+              "observed_count": 3,
+              "r2": -1.9648993540886623,
+              "rmse": 0.4314871834015538
+            },
+            "target__social": {
+              "mae": 0.38996907075246173,
+              "observed_count": 3,
+              "r2": -3.5165068358227884,
+              "rmse": 0.44195267465736854
+            }
+          }
+        },
+        "validation": {
+          "macro_mae": 0.2219887177149455,
+          "macro_r2": -0.8280032980272414,
+          "macro_rmse": 0.2860570683578481,
+          "targets": {
+            "target__environment": {
+              "mae": 0.3095872203509013,
+              "observed_count": 3,
+              "r2": -1.495404198108377,
+              "rmse": 0.3916922468284485
+            },
+            "target__social": {
+              "mae": 0.13439021507898966,
+              "observed_count": 3,
+              "r2": -0.16060239794610576,
+              "rmse": 0.1804218898872477
+            }
+          }
+        }
+      },
+      "model": "train_mean",
+      "uses_graph": false
+    }
+  ],
+  "protocol": {
+    "directed_edges_per_snapshot": 4,
+    "epochs": 2,
+    "nodes": 3,
+    "seed": 17,
+    "selection_rule": "validation metrics only; test metrics are descriptive",
+    "targets": [
+      "target__environment",
+      "target__social"
+    ],
+    "test_periods": [
+      2022
+    ],
+    "train_periods": [
+      2018,
+      2019,
+      2020
+    ],
+    "validation_periods": [
+      2021
+    ]
+  },
+  "schema_version": 1,
+  "scope": "deterministic_synthetic_smoke",
+  "source": "examples.notebook_support.build_synthetic_prepared_data",
+  "warning": "Synthetic smoke results validate deterministic execution only. They are not scientific evidence, real-data reproduction, hyperparameter optimization, or causal proof."
+}

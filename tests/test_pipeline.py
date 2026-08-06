@@ -8,7 +8,7 @@ import pytest
 import torch.nn.functional as F
 
 from src.data.preprocessing import build_graph_dataset, graph_from_io_matrix, make_smoke_dataset, targets_from_esg_frame
-from src.models.gnn_models import EconomicESGGNN
+from src.models import WeightedDirectedGAT
 from src.training import evaluate_model, to_tensors, train_model
 
 
@@ -50,7 +50,7 @@ def test_build_graph_dataset_rejects_target_length_mismatch():
 def test_train_and_evaluate_smoke_dataset():
     dataset = make_smoke_dataset()
     model, history = train_model(dataset, epochs=2, hidden_dim=8)
-    assert isinstance(model, EconomicESGGNN)
+    assert isinstance(model, WeightedDirectedGAT)
     assert len(history) == 2
     metrics = evaluate_model(model, dataset)
     assert set(metrics) == {"mae", "rmse", "r2"}
@@ -63,9 +63,9 @@ def test_train_model_rejects_non_positive_epochs():
 
 def test_forward_backward_step():
     dataset = make_smoke_dataset()
-    model = EconomicESGGNN(input_dim=dataset.features.shape[1], hidden_dim=8)
+    model, _ = train_model(dataset, epochs=1, hidden_dim=8)
     x, edge_index, edge_weight, y = to_tensors(dataset)
-    pred = model(x, edge_index, edge_weight)["esg_risk"]
+    pred = model(x, edge_index, edge_weight).predictions[:, 0]
     loss = F.mse_loss(pred, y)
     loss.backward()
     assert any(param.grad is not None for param in model.parameters())

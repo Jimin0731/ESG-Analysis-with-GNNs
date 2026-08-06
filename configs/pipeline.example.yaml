@@ -4,7 +4,7 @@ inputs:
   esg_scores: tests/fixtures/esg/valid_esg.csv
   industry_mapping: tests/fixtures/mappings/synthetic_industry_mapping.csv
 outputs:
-  reports_dir: results/metrics
+  reports_dir: runs/metrics
 missing_value_policy: preserve
 duplicate_policy: error
 minimum_mapping_coverage: 0.8

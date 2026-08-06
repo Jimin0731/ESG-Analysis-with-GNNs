@@ -40,3 +40,5 @@ artifacts/
 *.joblib
 *.onnx
 pipeline_metrics.json
+/results/metrics/
+/results/figures/
