@@ -1,5 +1,13 @@
 # ESG Analysis with GNNs
 
+## Post-training interpretability (Migration PR 9)
+
+The focused `src.evaluation` API extracts final- or per-layer GAT attention, runs additive node-feature perturbations in the already processed feature space, performs one-at-a-time feature ablation and frozen-model edge ablation, and traces bounded descriptive attention paths. Stored graph columns always retain their `source → target` direction. Canonical GAT coefficients use **incoming-target-per-head** normalization; the older `normalize_attention` utility remains a generic absolute-global helper and is not used by extraction. Weighted GAT incorporates supplied economic edge weights in its existing normalization, while unweighted GAT does not; zero-weight ablation is rejected for unweighted models.
+
+GPR-GNN reports softmax propagation-step coefficients separately: they are not edge attention. Attention-path scores are products of aggregated attention coefficients along directed, cycle-free paths, whereas perturbation results are prediction deltas; these quantities must be examined separately. Attention is not an explanation by itself and is not a causal effect. Perturbations and ablations measure local model sensitivity, not real-world interventions, and processed-space units may be standardized or transformed.
+
+`export_explanation_bundle` writes applicable CSV/JSON reports and static PNG/SVG Matplotlib/NetworkX figures only when an output directory is explicitly provided. Run `python scripts/run_interpretability_smoke.py` for a synthetic validation-only check. Reports and figures identify model association/local sensitivity rather than a causal estimate. Derived targets retain the PR 5 construct-validity caveat; test explanations must not be used retrospectively for model selection or tuning. Real-data scientific conclusions remain outside synthetic smoke validation.
+
 This repository contains notebook experiments and reusable Python modules for
 Environmental, Social, and Governance (ESG) analysis with graph neural networks.
 The reusable pipeline is extracted from the most complete end-to-end notebook,

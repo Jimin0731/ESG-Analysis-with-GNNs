@@ -25,3 +25,5 @@ jobs:
         run: python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8
       - name: Run chronological experiment smoke
         run: python scripts/run_experiment_smoke.py
+      - name: Run interpretability smoke
+        run: python scripts/run_interpretability_smoke.py

@@ -1,5 +1,9 @@
 # Research Notebook Migration Plan
 
+## Migration PR 9 — implemented
+
+Clean attention and shock helpers were extracted manually without importing the malformed notebook export. GAT attention remains destination-normalized and direction-preserving, while GPR propagation coefficients are reported separately from attention. Node perturbation and feature/edge ablation are frozen-model sensitivity checks. Tabular outputs and static figures are exported only when explicitly requested, and every output carries non-causal interpretation warnings. Notebook consolidation remains deferred to PR 10; the full notebook migration is not complete.
+
 ## Scope and method
 
 This document is based on static inspection of the 14 research files currently tracked on `main` at commit `718f0a1da580aa41939b8fcc0ed18d892a573988`. No external API requests, dataset downloads, or long model-training runs were performed. The goal is to identify the strongest source for each component, document the research lineage, and split migration into reviewable pull requests.
