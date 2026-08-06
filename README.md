@@ -17,7 +17,13 @@ python scripts/run_pipeline.py --smoke-test --epochs 2 --hidden-dim 8
 - `archive/research/` — historical provenance only; **never import or execute it**.
 - `docs/` — [research lineage](docs/RESEARCH_LINEAGE.md), [machine-readable lineage](docs/research_lineage.yaml), and [migration completion](docs/MIGRATION_COMPLETION.md).
 
-Launch notebooks from the repository root with `jupyter notebook`, then follow `00_end_to_end_overview.ipynb`, `01_data_pipeline.ipynb`, `02_model_comparison.ipynb`, `03_temporal_evaluation.ipynb`, and `04_interpretability.ipynb`.
+Launch notebooks with the canonical cross-platform command:
+
+```bash
+python scripts/launch_notebooks.py
+```
+
+The launcher starts Jupyter from the repository root and makes `src` and `examples` importable in notebook kernels. It does not execute archived notebooks, insert paths inside notebook cells, or edit notebook files. Then follow `00_end_to_end_overview.ipynb`, `01_data_pipeline.ipynb`, `02_model_comparison.ipynb`, `03_temporal_evaluation.ipynb`, and `04_interpretability.ipynb`.
 
 ## Active checks
 

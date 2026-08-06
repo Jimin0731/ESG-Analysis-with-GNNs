@@ -4,9 +4,13 @@ import hashlib
 import importlib
 import pkgutil
 import re
+import os
+import sys
 from pathlib import Path
+from unittest.mock import patch
 import nbformat
 import yaml
+from scripts.launch_notebooks import build_notebook_command,build_notebook_environment,main as launch_notebooks
 from scripts.run_notebook_smoke import ACTIVE_NOTEBOOKS
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -55,6 +59,28 @@ def test_active_notebooks_use_repo_apis_without_unsafe_scaffolding():
 def test_notebook_readme_registers_all_active_examples():
  text=(ROOT/'notebooks/README.md').read_text()
  assert all(name in text for name in ACTIVE_NOTEBOOKS)
+
+def test_documented_launcher_replaces_bare_jupyter_command():
+ for path in (ROOT/'README.md',ROOT/'notebooks/README.md'):
+  text=path.read_text()
+  assert 'python scripts/launch_notebooks.py' in text
+  assert 'jupyter notebook' not in text.lower()
+
+def test_launcher_environment_prepends_root_without_mutating_input():
+ base={'PYTHONPATH':'existing/path','UNCHANGED':'yes'}; original=dict(base)
+ result=build_notebook_environment(ROOT,base)
+ assert result['PYTHONPATH']==str(ROOT)+os.pathsep+'existing/path'
+ assert result['UNCHANGED']=='yes' and base==original
+
+def test_launcher_command_uses_current_python_interpreter():
+ assert build_notebook_command()==(sys.executable,'-m','notebook')
+
+def test_launcher_runs_from_root_with_prepared_environment_and_returns_code():
+ completed=type('Completed',(),{'returncode':23})()
+ with patch('scripts.launch_notebooks.build_notebook_environment',return_value={'PYTHONPATH':'prepared'}) as environment,patch('scripts.launch_notebooks.subprocess.run',return_value=completed) as run:
+  assert launch_notebooks()==23
+ environment.assert_called_once_with(ROOT)
+ run.assert_called_once_with((sys.executable,'-m','notebook'),cwd=ROOT,env={'PYTHONPATH':'prepared'},shell=False,check=False)
 
 def test_lineage_schema_paths_and_archive_coverage():
  payload=yaml.safe_load((ROOT/'docs/research_lineage.yaml').read_text())
