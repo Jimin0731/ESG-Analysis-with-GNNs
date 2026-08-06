@@ -1,5 +1,5 @@
 """Seeded supervised training with full-split label-count aggregation."""
-import random
+import copy,random
 import numpy as np
 import torch
 from src.models import build_model
@@ -63,5 +63,5 @@ def train_supervised_model(model_config,prepared_data,training_config,early_stop
         for split in ("train","validation","test"):
             snapshots=getattr(prepared_data,split); evaluations[split]=evaluate_predictions(snapshots,[model(s.x,s.edge_index,s.edge_weight).predictions for s in snapshots])
     stopped=len(history)<training_config.epochs; final={k:v.detach().cpu().clone() for k,v in model.state_dict().items()}
-    return TrainingResult(model_config.name,training_config.seed,training_config.epochs,len(history),checkpoint.metadata["epoch"],stopped,"validation_loss_patience" if stopped else "epochs_completed",checkpoint.metadata["monitored_value"],early_stopping_config.restore_best,normalized,tuple(history),evaluations,{k:v.clone() for k,v in checkpoint.state.items()},final)
+    return TrainingResult(model_config.name,training_config.seed,training_config.epochs,len(history),checkpoint.metadata["epoch"],stopped,"validation_loss_patience" if stopped else "epochs_completed",checkpoint.metadata["monitored_value"],early_stopping_config.restore_best,normalized,tuple(history),evaluations,{k:v.clone() for k,v in checkpoint.state.items()},final,copy.deepcopy(model_config.to_report()))
 __all__=["seed_everything","train_supervised_model"]

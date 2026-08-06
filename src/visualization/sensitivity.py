@@ -24,5 +24,5 @@ def plot_shock_network(bundle,*,target_name,seed=0):
     normal=[n for n,s in zip(graph,shapes) if not s]; source=[n for n,s in zip(graph,shapes) if s]
     nx.draw_networkx_nodes(graph,pos,nodelist=normal,node_color=[values.get(n,0) for n in normal],cmap="coolwarm",ax=ax); nx.draw_networkx_nodes(graph,pos,nodelist=source,node_shape="*",node_color=[values.get(n,0) for n in source],cmap="coolwarm",node_size=500,ax=ax); nx.draw_networkx_labels(graph,pos,ax=ax)
     if attention: nx.draw_networkx_edges(graph,pos,width=[1+3*d["width"] for *_,d in graph.edges(data=True)],arrows=True,ax=ax)
-    ax.set_title("Model prediction response; edge width = attention-route score\nEconomic edge weight remains separate"); ax.axis("off"); return _finish(fig)
+    ax.set_title("Node value = signed model prediction delta\nEdge width = aggregated edge attention coefficient\nEconomic edge weight = separate graph context"); ax.axis("off"); return _finish(fig)
 __all__=["plot_shock_prediction_changes","plot_shock_network","plot_feature_ablation_sensitivity","plot_edge_ablation_sensitivity","plot_gpr_propagation_coefficients"]

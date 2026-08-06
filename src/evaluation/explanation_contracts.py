@@ -12,7 +12,7 @@ class AttentionHeadRecord: edge_position:int; source_index:int; source_node_id:s
 @dataclass(frozen=True)
 class AttentionEdgeRecord: edge_position:int; source_index:int; source_node_id:str; target_index:int; target_node_id:str; layer_index:int; aggregated_attention_coefficient:float; economic_edge_weight:float|None
 @dataclass(frozen=True)
-class AttentionExplanation: model_name:str; period:int; split:str; graph_direction:str; layer_index:int; head_aggregation:str; normalization:str; normalization_valid:bool; heads:tuple[AttentionHeadRecord,...]; edges:tuple[AttentionEdgeRecord,...]; ranking_rule:str; warnings:tuple[ExplanationWarning,...]
+class AttentionExplanation: model_name:str; period:int; split:str; graph_direction:str; layer_index:int; head_aggregation:str; normalization:str; normalization_valid:bool; uses_economic_edge_weight:bool; heads:tuple[AttentionHeadRecord,...]; edges:tuple[AttentionEdgeRecord,...]; ranking_rule:str; warnings:tuple[ExplanationWarning,...]
 @dataclass(frozen=True)
 class PropagationCoefficientRecord: step:int; coefficient:float; alpha:float; graph_direction:str; state_kind:str
 @dataclass(frozen=True)

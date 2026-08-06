@@ -1,4 +1,5 @@
 from __future__ import annotations
+import torch
 from src.models import build_model,get_model_capabilities
 from .attention_explanations import extract_attention_explanation,trace_attention_paths
 from .propagation import extract_propagation_explanation
@@ -20,11 +21,20 @@ def build_shock_explanation(model,snapshot,*,source_node_id,feature_changes,targ
 
 def explain_training_result(model_config,training_result,prepared_data,*,split,period,source_node_id,feature_changes,state_source="final",**kwargs):
     if state_source not in {"final","best"}: raise InterpretabilityValidationError("state_source must be final or best")
-    if training_result.model_name!=model_config.name: raise InterpretabilityValidationError("model configuration does not match training result")
+    recorded=training_result.model_configuration
+    if not recorded: raise InterpretabilityValidationError("training result lacks the exact recorded model configuration")
+    if model_config.to_report()!=recorded or training_result.model_name!=model_config.name: raise InterpretabilityValidationError("model configuration does not exactly match training result")
+    if model_config.input_dim!=len(prepared_data.feature_names): raise InterpretabilityValidationError("model input dimension does not match prepared feature names")
+    if tuple(model_config.target_names)!=tuple(prepared_data.target_names): raise InterpretabilityValidationError("model targets do not match prepared target order")
+    if tuple(training_result.normalized_target_weights)!=tuple(prepared_data.target_names): raise InterpretabilityValidationError("normalized target-weight order does not match prepared targets")
     if split not in {"train","validation","test"}: raise InterpretabilityValidationError("invalid explicit split")
     matches=[s for s in getattr(prepared_data,split) if s.period==period]
     if len(matches)!=1: raise InterpretabilityValidationError("requested split and period must identify exactly one snapshot")
+    snapshot=matches[0]
+    if tuple(snapshot.feature_names)!=tuple(prepared_data.feature_names) or tuple(snapshot.target_names)!=tuple(prepared_data.target_names): raise InterpretabilityValidationError("snapshot feature or target names do not match prepared data")
     model=build_model(model_config); stored=training_result.final_state if state_source=="final" else training_result.best_state
+    expected=model.state_dict()
+    if tuple(stored)!=tuple(expected) or any(not isinstance(stored[k],torch.Tensor) or stored[k].shape!=expected[k].shape for k in expected): raise InterpretabilityValidationError("stored state keys or tensor shapes do not exactly match model")
     model.load_state_dict({k:v.detach().clone() for k,v in stored.items()})
-    return build_shock_explanation(model,matches[0],source_node_id=source_node_id,feature_changes=feature_changes,model_state_source=state_source,**kwargs)
+    return build_shock_explanation(model,snapshot,source_node_id=source_node_id,feature_changes=feature_changes,model_state_source=state_source,**kwargs)
 __all__=["build_shock_explanation","explain_training_result"]

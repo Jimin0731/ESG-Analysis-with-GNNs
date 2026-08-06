@@ -10,13 +10,16 @@ def _infer(model,snapshot,*,aux=False,x=None,edge_index=None,edge_weight=None):
         with torch.no_grad(): return model(snapshot.x if x is None else x,snapshot.edge_index if edge_index is None else edge_index,snapshot.edge_weight if edge_weight is None else edge_weight,return_aux=aux)
     finally: model.train(prior)
 
-def validate_destination_attention_normalization(edge_index, coefficients, *, weighted=False, atol=1e-5):
+def validate_destination_attention_normalization(edge_index, coefficients, *, weighted=False, edge_weight=None, atol=1e-5):
     if coefficients.ndim!=2 or edge_index.shape!=(2,coefficients.shape[0]): raise InterpretabilityValidationError("attention and edge shapes disagree")
     if not torch.isfinite(coefficients).all(): raise InterpretabilityValidationError("attention must be finite")
+    if weighted:
+        if not isinstance(edge_weight,torch.Tensor) or edge_weight.shape!=(coefficients.shape[0],): raise InterpretabilityValidationError("weighted attention requires aligned edge weights shaped [E]")
+        if not torch.isfinite(edge_weight).all() or (edge_weight<0).any(): raise InterpretabilityValidationError("edge weights must be finite and non-negative")
     for target in torch.unique(edge_index[1]):
         sums=coefficients[edge_index[1]==target].sum(0)
-        if weighted and torch.allclose(sums,torch.zeros_like(sums),atol=atol): continue
-        if not torch.allclose(sums,torch.ones_like(sums),atol=atol): raise InterpretabilityValidationError("incoming attention must sum to one per destination and head")
+        expected=0.0 if weighted and float(edge_weight[edge_index[1]==target].sum())==0.0 else 1.0
+        if not torch.allclose(sums,torch.full_like(sums,expected),atol=atol): raise InterpretabilityValidationError("incoming attention does not match destination economic mass")
     return True
 
 def extract_attention_explanation(model,snapshot,*,layer_index=-1,head_aggregation="mean",top_k=None):
@@ -28,7 +31,7 @@ def extract_attention_explanation(model,snapshot,*,layer_index=-1,head_aggregati
     if isinstance(layer_index,bool) or not 0<=index<len(layers): raise InterpretabilityValidationError("invalid attention layer")
     edge=aux.get("edge_index"); alpha=layers[index]
     if not torch.equal(edge,snapshot.edge_index): raise InterpretabilityValidationError("returned edge index does not match snapshot order")
-    validate_destination_attention_normalization(edge,alpha,weighted=name=="weighted_gat")
+    validate_destination_attention_normalization(edge,alpha,weighted=name=="weighted_gat",edge_weight=snapshot.edge_weight if name=="weighted_gat" else None)
     heads=alpha.shape[1]
     if isinstance(head_aggregation,int) and not isinstance(head_aggregation,bool):
         if not 0<=head_aggregation<heads: raise InterpretabilityValidationError("invalid attention head")
@@ -46,7 +49,7 @@ def extract_attention_explanation(model,snapshot,*,layer_index=-1,head_aggregati
     if top_k is not None:
         if isinstance(top_k,bool) or not isinstance(top_k,int) or top_k<=0: raise InterpretabilityValidationError("top_k must be a positive integer")
         ranked=ranked[:top_k]
-    return AttentionExplanation(name,snapshot.period,snapshot.split,"source_to_target",index,label,"incoming_target_per_head",True,tuple(head_records),tuple(ranked),"aggregated attention descending, source ID, target ID, edge position",NON_CAUSAL_WARNINGS)
+    return AttentionExplanation(name,snapshot.period,snapshot.split,"source_to_target",index,label,"incoming_target_per_head",True,name=="weighted_gat",tuple(head_records),tuple(ranked),"aggregated attention descending, source ID, target ID, edge position",NON_CAUSAL_WARNINGS)
 
 def trace_attention_paths(explanation,*,source_node_id,max_hops=3,top_k=10):
     for key,value in (("max_hops",max_hops),("top_k",top_k)):

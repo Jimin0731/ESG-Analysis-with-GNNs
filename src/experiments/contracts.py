@@ -85,7 +85,7 @@ class MetricResult: target_name:str; mae:float; rmse:float; r2:float|None; obser
 class SplitEvaluation: split:str; metrics:tuple[MetricResult,...]; macro_mae:float; macro_rmse:float; macro_r2:float|None; predictions:tuple[dict[str,Any],...]
 @dataclass(frozen=True)
 class TrainingResult:
-    model_name:str; seed:int; requested_epochs:int; completed_epochs:int; best_epoch:int; stopped_early:bool; stop_reason:str; best_monitored_value:float; restored_best:bool; normalized_target_weights:dict[str,float]; history:tuple[EpochRecord,...]; evaluations:dict[str,SplitEvaluation]; best_state:dict[str,torch.Tensor]=field(repr=False,compare=False); final_state:dict[str,torch.Tensor]=field(repr=False,compare=False)
+    model_name:str; seed:int; requested_epochs:int; completed_epochs:int; best_epoch:int; stopped_early:bool; stop_reason:str; best_monitored_value:float; restored_best:bool; normalized_target_weights:dict[str,float]; history:tuple[EpochRecord,...]; evaluations:dict[str,SplitEvaluation]; best_state:dict[str,torch.Tensor]=field(repr=False,compare=False); final_state:dict[str,torch.Tensor]=field(repr=False,compare=False); model_configuration:dict[str,Any]|None=None
     def to_report(self):
         d=asdict(self); d.pop("best_state"); d.pop("final_state"); return d
 @dataclass(frozen=True)
